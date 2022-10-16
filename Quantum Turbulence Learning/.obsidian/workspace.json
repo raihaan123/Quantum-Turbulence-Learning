@@ -1,0 +1,147 @@
+{
+  "main": {
+    "id": "bc7fe7c42ecb5827",
+    "type": "split",
+    "children": [
+      {
+        "id": "e66e100b93eb4a80",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f5b165dc26dd01d2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Topics of Interest.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2273008c9661b09a",
+    "type": "split",
+    "children": [
+      {
+        "id": "7853e8b655b5a3f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4b4cbd7d68e2603f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "e77fae51265262bb",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "46d25dd5ee163133",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "daeb2c412b2fd818",
+    "type": "split",
+    "children": [
+      {
+        "id": "e687ee18e7fdb15f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "246a558b241fa307",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Topics of Interest.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "a3f41b0e4d6e18a6",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Topics of Interest.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "dc1d975ec395e2a1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "b7269258894de02b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Topics of Interest.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "ribbon": {
+    "mostRecentAction": ""
+  },
+  "active": "f5b165dc26dd01d2",
+  "lastOpenFiles": [
+    "Perceiver IO.md",
+    "Topics of Interest.md"
+  ]
+}
