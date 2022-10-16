@@ -23,9 +23,11 @@
             "id": "a10e6daeb3d52f52",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "Project Kanban.md"
+                "file": "Big Milestones.md",
+                "mode": "preview",
+                "source": false
               }
             }
           }
@@ -96,7 +98,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Project Kanban.md",
+                "file": "Big Milestones.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +115,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Project Kanban.md",
+                "file": "Big Milestones.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -136,7 +138,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Project Kanban.md"
+                "file": "Big Milestones.md"
               }
             }
           }
@@ -152,8 +154,9 @@
   },
   "active": "a10e6daeb3d52f52",
   "lastOpenFiles": [
-    "Big Milestones.md",
     "Topics of Interest.md",
+    "Project Kanban.md",
+    "Big Milestones.md",
     "Perceiver IO.md"
   ]
 }
