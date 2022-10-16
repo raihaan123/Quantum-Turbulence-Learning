@@ -18,8 +18,19 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "a10e6daeb3d52f52",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "Project Kanban.md"
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -85,7 +96,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Topics of Interest.md",
+                "file": "Project Kanban.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +113,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Topics of Interest.md",
+                "file": "Project Kanban.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +136,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Topics of Interest.md"
+                "file": "Project Kanban.md"
               }
             }
           }
@@ -139,9 +150,10 @@
   "ribbon": {
     "mostRecentAction": ""
   },
-  "active": "f5b165dc26dd01d2",
+  "active": "a10e6daeb3d52f52",
   "lastOpenFiles": [
-    "Perceiver IO.md",
-    "Topics of Interest.md"
+    "Big Milestones.md",
+    "Topics of Interest.md",
+    "Perceiver IO.md"
   ]
 }
