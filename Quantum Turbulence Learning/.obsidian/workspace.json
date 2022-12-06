@@ -8,25 +8,37 @@
         "type": "tabs",
         "children": [
           {
-            "id": "f5b165dc26dd01d2",
+            "id": "15b6d5a8d951a04c",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Topics of Interest.md",
-                "mode": "preview",
+                "file": "Supervisor Meetings/Meeting 2.md",
+                "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "a10e6daeb3d52f52",
+            "id": "a72d577ce1d33c48",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Big Milestones.md",
-                "mode": "preview",
+                "file": "Supervisor Meetings/Meeting 3.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "8560775a7b7e7384",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Theory/Quantum Computing Theory.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -98,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Big Milestones.md",
+                "file": "Supervisor Meetings/Meeting 3.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Big Milestones.md",
+                "file": "Supervisor Meetings/Meeting 3.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,25 +150,42 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Big Milestones.md"
+                "file": "Supervisor Meetings/Meeting 3.md"
               }
             }
+          },
+          {
+            "id": "044754352a11fbc2",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Launchpad.md",
+                "mode": "source",
+                "source": false
+              },
+              "pinned": true
+            }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
-  "ribbon": {
-    "mostRecentAction": ""
-  },
-  "active": "a10e6daeb3d52f52",
+  "active": "a72d577ce1d33c48",
   "lastOpenFiles": [
-    "Topics of Interest.md",
-    "Project Kanban.md",
-    "Big Milestones.md",
-    "Perceiver IO.md"
+    "References/QC Literature Review.md",
+    "Supervisor Meetings/Meeting 2.md",
+    "Launchpad.md",
+    "Supervisor Meetings/Meeting 3.md",
+    "References/QC for CFD - Type 2.pdf",
+    "References/QC for CFD opportunites.pdf",
+    "References/QC Ideas.pdf",
+    "References/QC prospects for Reactive Turbulence.pdf",
+    "References/QCFD comparisions.pdf",
+    "References/QML Literature Review.md"
   ]
 }
