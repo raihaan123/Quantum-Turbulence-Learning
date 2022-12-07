@@ -1,4 +1,5 @@
-| Reference                   | Type of QC used | Application         | Size of Problem |     |     |
-| --------------------------- | --------------- | ------------------- | --------------- | --- | --- |
-| [[QC for CFD - Type 2.pdf]] | 'Type II'       | Diffusion modelling |                 |     |     |
-| [[]]                            |                 |                     |                 |     |     |
+| Reference                         | Abstract Paraphrased | Application         | Size of Problem |     |     |
+| --------------------------------- | -------------------- | ------------------- | --------------- | --- | --- |
+| [[QC for CFD - Type 2.pdf]]       | 'Type II'            | Diffusion modelling |                 |     |     |
+| [[QC for NS in ConDi nozzle.pdf]] | This paper presents a quantum algorithm for solving the Navier-Stokes equations, which are commonly used to describe the motion of viscous fluids. The authors test the algorithm by using it to simulate the flow of an inviscid, compressible fluid through a convergent-divergent nozzle and find that it provides results that are in excellent agreement with the known exact solution. They also compare the computational cost of the quantum algorithm to classical methods and show that it offers a significant speed-up. The authors argue that this algorithm could have a significant impact in a variety of fields, including the aerospace industry and weather forecasting.                    |                     |                 |     |     |
+|                                   |                      |                     |                 |     |     |
