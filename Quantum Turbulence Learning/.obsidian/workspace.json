@@ -4,47 +4,22 @@
     "type": "split",
     "children": [
       {
-        "id": "e66e100b93eb4a80",
+        "id": "23c6a1778ab0ea7b",
         "type": "tabs",
         "children": [
           {
-            "id": "15b6d5a8d951a04c",
+            "id": "8c8d6cc8692792e3",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Supervisor Meetings/Meeting 2.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "a72d577ce1d33c48",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Supervisor Meetings/Meeting 3.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "8560775a7b7e7384",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Theory/Quantum Computing Theory.md",
-                "mode": "source",
+                "file": "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
+                "mode": "preview",
                 "source": false
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -110,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Supervisor Meetings/Meeting 3.md",
+                "file": "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Supervisor Meetings/Meeting 3.md",
+                "file": "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Supervisor Meetings/Meeting 3.md"
+                "file": "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md"
               }
             }
           },
@@ -162,7 +137,7 @@
               "type": "markdown",
               "state": {
                 "file": "Launchpad.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               },
               "pinned": true
@@ -175,17 +150,17 @@
     "direction": "horizontal",
     "width": 300
   },
-  "active": "a72d577ce1d33c48",
+  "active": "8c8d6cc8692792e3",
   "lastOpenFiles": [
-    "References/QC Literature Review.md",
-    "Supervisor Meetings/Meeting 2.md",
     "Launchpad.md",
-    "Supervisor Meetings/Meeting 3.md",
-    "References/QC for CFD - Type 2.pdf",
-    "References/QC for CFD opportunites.pdf",
-    "References/QC Ideas.pdf",
-    "References/QC prospects for Reactive Turbulence.pdf",
-    "References/QCFD comparisions.pdf",
-    "References/QML Literature Review.md"
+    "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
+    "Theory/Qubits.md",
+    "Theory/Reservoir Computing Models (RCMs).md",
+    "Theory/Quantum Reservoir Computing Models (QRCMs).md",
+    "Theory/Recurrent Neural Networks (RNNs).md",
+    "Theory/Coherence.md",
+    "Theory/Entanglement.md",
+    "Theory/Classical Ridge Regression.md",
+    "Theory/Quantum Computing.md"
   ]
 }

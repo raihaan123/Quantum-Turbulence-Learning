@@ -9,8 +9,9 @@
 - [[Meeting 3]]
 
 
+##### Paper Breakdowns
+- [[Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow]]
+
 ##### Project Pages
-- [[Quantum Computing Theory]]
-- [[Quantum ML Theory]]
 - [[QC Literature Review]]
 - [[QML Literature Review]]

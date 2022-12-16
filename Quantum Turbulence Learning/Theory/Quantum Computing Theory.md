@@ -1,5 +1,0 @@
-- Read the QC part of the Qiskit PyQML book
-- Switched to and completed the Qiskit online QC beginner's course
-- Experiemented with IBM Quantum Lab - can now build + test meaningful circuits with both Composer and Qiskit, including Grover's search algorithm
-- Played with Google's Cirq quantum framework; looked briefly into TensorFlow Quantum
-- 
