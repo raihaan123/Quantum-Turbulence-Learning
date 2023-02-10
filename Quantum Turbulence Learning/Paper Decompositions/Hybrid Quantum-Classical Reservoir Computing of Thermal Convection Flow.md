@@ -1,6 +1,6 @@
 #paper
 
-> In this study, the authors use a hybrid quantum-classical machine learning algorithm called a quantum reservoir computing model (QRCM) to predict and reconstruct the dynamics of a thermal convection flow. They investigate the QRCM in two different modes of operation and implement it on an ideal quantum simulator and a real quantum computer. The authors also compare the performance of the QRCM with that of its classical counterpart and demonstrate that the QRCM's performance decreases as the degree of entanglement in the quantum reservoir is reduced. Their work aims to extend the applications of QRCMs to classical nonlinear dynamical systems with a larger number of degrees of freedom.
+> In this study, the authors use a hybrid quantum-classical machine learning algorithm called [[Quantum Reservoir Computing Models (QRCMs)]] to predict and reconstruct the dynamics of a [[Thermal Convection Flow]]. They investigate the QRCM in two different modes of operation and implement it on an ideal quantum simulator and a real quantum computer. The authors also compare the performance of the QRCM with that of its classical counterpart and demonstrate that the QRCM's performance decreases as the degree of entanglement in the quantum reservoir is reduced. Their work aims to extend the applications of QRCMs to classical nonlinear dynamical systems with a larger number of degrees of freedom.
 
 
 ## Introduction
@@ -12,3 +12,9 @@ This second part of the introduction describes the main contributions and goals 
 The second contribution of the study is to compare the performance of the QRCM with that of its classical counterpart for the same flow. The authors identify hyperparameters in both approaches that can be related to each other, and demonstrate that a systematic reduction of the degree of entanglement in the quantum reservoir by dividing it into blocks of entangled qubits reduces the performance of the QRCM algorithm. They also show that the number of operations of the QRCM circuit can be scaled with O(n) < O(2^n), where n is the number of qubits in the reservoir, for the open-loop scenario.
 
 Finally, the introduction describes the two main frameworks for research on quantum reservoir computing models: the analog framework, which investigates the dynamics of interacting many-particle quantum systems, and the digital gate-based framework, which uses circuits composed of universal quantum gates to build a quantum reservoir on NISQ devices. The authors state that their work falls within the latter framework and aims to extend the applications of QRCMs to classical nonlinear dynamical systems with a larger number of degrees of freedom.
+
+### Diagrams
+
+- Solution pipeline in closed loop - Autonomous prediction
+- Training the model with reference data
+- Proposed PINN-inspired cost function
