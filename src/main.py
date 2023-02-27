@@ -1,10 +1,10 @@
-from ode import generate_data
+from ode import generate_data, ddt_lorentz
 
-import os;  os.environ["OMP_NUM_THREADS"] = '8' # imposes cores
+import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 
 ### Currently unused imports ###
 
-import numpy as np
+# import numpy as np
 # import matplotlib.pyplot as plt
 # import h5py
 # from scipy.sparse import csr_matrix, csc_matrix, lil_matrix
@@ -20,8 +20,8 @@ import numpy as np
 
 # Data generation parameters
 dim             = 3
-upsample        = 2                     # to increase the dt of the ESN wrt the numerical integrator
-dt              = 0.005 * upsample      # time step
+upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
+dt              = 0.005 * upsample      # Time step
 
 # Solve the ODE system using generate_data() function
-U_washout, U_tv, Y_tv, U_test, Y_test, norm, u_mean = generate_data(dim, upsample, dt)
+U_tv, Y_tv, U_test, Y_test = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
