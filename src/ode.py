@@ -34,6 +34,15 @@ def ddt_lorentz(u, params):
 def forward_euler(ddt, u0, T, *args):
     """
         Forwards Euler method for solving ODEs - coded generically so that it can be used for any ODE system.
+
+        Args:
+            ddt: function that returns the time derivative of u
+            u0: initial condition
+            T: time steps
+            *args: additional arguments to ddt
+
+        Returns:
+            u: Time series of shape (T.size, u0.size)
     """
 
     u = np.empty((T.size, u0.size))
@@ -56,6 +65,7 @@ def solve_ode(N, dt, u0, params=[8/3, 28, 10], ddt=ddt_lorentz):
             u0: initial condition
             params: parameters of the ODE system
             ddt: function that returns the time derivative of u
+
         Returns:
             normalized time series of shape (N+1, u0.size)
     """
@@ -69,6 +79,13 @@ def solve_ode(N, dt, u0, params=[8/3, 28, 10], ddt=ddt_lorentz):
 def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     """
         Generates data for training, validation and testing.
+        Args:
+            dim: dimension of the ODE system
+            upsample: upsampling factor
+            dt: time step
+            ddt: function that returns the time derivative of u
+            noisy: whether to add noise to the data
+
         Returns:
             U_washout: washout data
             U_tv: training + validation data
