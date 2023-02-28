@@ -1,5 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix, csc_matrix, lil_matrix
-from scipy.sparse.linalg import eigs as sparse_eigs
+from scipy.sparse.linalg import eigs
 import time
 
 
@@ -29,6 +31,7 @@ class CRCM:
                        connectivity=3,
                        seed=0):
 
+        self.dim            = dim
         self.N_units        = N_units
         self.connectivity   = connectivity
         self.sparseness     = 1 - connectivity/(N_units-1)
@@ -36,27 +39,37 @@ class CRCM:
         self.seed           = seed
         self.rnd            = np.random.RandomState(seed)
 
+
+    def generate_weights(self):
+        """
+        Generates the input weights and reservoir weights (Win and W)
+        """
+
+        N_units     = self.N_units
+        dim         = self.dim
+
         # Sparse syntax for the input matrix
         # Rows correspond to reservoir units/neurons, columns to inputs
-        self.Win = lil_matrix((N_units, dim+1))      # +1 for bias input
+        Win = self.Win = lil_matrix((N_units, dim+1))      # +1 for bias input
 
         # This loop randomly selects a column in Win and fills it with a random number between [-1, 1)
-        for j in range(N_units):
-            Win[j, rnd.randint(0, dim+1)] = rnd.uniform(-1, 1) # Only one element different from zero
+        for i in range(N_units):
+            Win[i, rnd.randint(0, dim+1)] = rnd.uniform(-1, 1) # Only one element different from zero
 
         # Convert to CSR format for faster matrix-vector multiplication
         Win = Win.tocsr()
 
         # Sparse syntax for the reservoir matrix
         # On average only connectivity elements different from zero
-        W = csr_matrix(
+        W = self.W = csr_matrix(
             rnd.uniform(-1, 1, (N_units, N_units)) * (rnd.rand(N_units, N_units) < (1-sparseness)))
 
         # The spectral radius of W is the maximum absolute value of its eigenvalues
-        self.rho = np.abs(sparse_eigs(W, k=1, which='LM', return_eigenvectors=False))[0]
+        self.rho = np.abs(eigs(W, k=1, which='LM', return_eigenvectors=False))[0]
 
         # Rescale W to have a spectral radius of 1
         W *= 1/self.rho
+
 
     
     def optimize(self):
@@ -67,7 +80,7 @@ class CRCM:
     def step(self):
         """ Advances one ESN time step
 
-            Args:
+            Args (self):
                 x_pre: reservoir state
                 u: input
                 sigma_in: input scaling
@@ -82,12 +95,6 @@ class CRCM:
         sigma_in    = self.sigma_in
         rho         = self.rho
 
-        # Input bias (average absolute value of the inputs)
-        bias_in     = np.array([np.mean(np.abs((u-u_mean)/norm))])
-
-        # Output bias
-        bias_out    = np.array([1.])
-
         # Input is normalized and input bias added
         u_augmented = np.hstack(((u-self.u_mean)/self.norm, self.bias_in))
 
@@ -95,7 +102,7 @@ class CRCM:
         x_post      = np.tanh(self.Win.dot(u_augmented*sigma_in) + self.W.dot(rho*self.x))   
 
         # Output bias added and state saved
-        self.x      = np.concatenate((x_post, bias_out))
+        self.x      = np.concatenate((x_post, self.bias_out))
 
 
     def open_loop(self, U, x0):
@@ -109,12 +116,21 @@ class CRCM:
                 Xa: Time series of augmented reservoir states
         """
 
-        N     = U.shape[0]
-        Xa    = np.empty((N+1, N_units+1))
-        Xa[0] = np.concatenate((x0,bias_out))
+        # Output bias
+        self.bias_out    = np.array([1.])
 
+        N     = U.shape[0]      # Number of time steps
+        Xa    = np.empty((N+1, self.N_units+1))
+        Xa[0] = np.concatenate((x0, self.bias_out))
+
+        # Iterate over time steps
         for i in np.arange(1, N+1):
-            Xa[i] = step(Xa[i-1,:N_units], U[i-1])
+            u   = self.u    = U[i-1]
+            self.bias_in    = np.array([np.mean(np.abs((u-self.u_mean)/self.norm))])
+
+            self.x          = Xa[i-1, :self.N_units]
+            step()
+            Xa[i]           = self.x
 
         return Xa
 
@@ -142,6 +158,9 @@ class CRCM:
         U_washout = self.U_washout = data['U_washout']
         U_train   = self.U_train   = data['U_train']
         Y_train   = self.Y_train   = data['Y_train']
+        u_mean    = self.u_mean    = data['u_mean']
+        norm      = self.norm      = data['norm']
+
         N_splits  = self.N_splits  = N_splits
 
         # To be optimized!
@@ -149,8 +168,12 @@ class CRCM:
         sigma_in  = self.sigma_in  = sigma_in
         rho       = self.rho       = rho
 
+        # Output bias
+        self.bias_out = np.array([1.])
+
         # Washout phase
-        xf    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,:N_units] # [-1,:x] takes the last row of the first x columns
+        # [-1,:x] indexes the last row of the first x columns
+        xf    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,:N_units]
         
         # LHS and RHS are the left and right hand sides of the equation Wout = LHS \ RHS
         LHS   = 0
@@ -161,25 +184,27 @@ class CRCM:
 
         # Loop over the splits
         for ii in range(N_splits):
+
+            # Start timer
             t1  = time.time()
 
             # Open-loop train phase - Xa1 is the augmented reservoir state time series, xf is the final state
             Xa1 = self.open_loop(U_train[ii*N_len:(ii+1)*N_len], xf)[1:]
             xf  = Xa1[-1,:N_units].copy()
 
+            # Stop timer
             t1  = time.time()
 
-            # Update LHS --> 
             LHS += np.dot(Xa1.T, Xa1) 
             RHS += np.dot(Xa1.T, Y_train[ii*N_len:(ii+1)*N_len])
-                        
+
         if N_splits > 1:# to cover the last part of the data that didn't make into the even splits
-            Xa1 = open_loop(U_train[(ii+1)*N_len:], xf, sigma_in, rho)[1:]
+            Xa1 = self.open_loop(U_train[(ii+1)*N_len:], xf)[1:]
             LHS += np.dot(Xa1.T, Xa1) 
             RHS += np.dot(Xa1.T, Y_train[(ii+1)*N_len:])
 
         LHS.ravel()[::LHS.shape[1]+1] += tikh
-        
+
         Wout = np.linalg.solve(LHS, RHS)
-        
+
         return Wout

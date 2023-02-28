@@ -5,8 +5,6 @@ import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 
 ### Currently unused imports ###
 
-# import numpy as np
-# import matplotlib.pyplot as plt
 # import h5py
 # import skopt
 # from skopt.space import Real
@@ -22,7 +20,7 @@ upsample        = 2                     # To increase the dt of the ESN wrt the 
 dt              = 0.005 * upsample      # Time step
 
 # Solve the ODE system using generate_data() from ode.py
-U_tv, Y_tv, U_test, Y_test = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
+data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 # Initialise the ESN
 crcm = CRCM(dim=dim,
@@ -31,7 +29,7 @@ crcm = CRCM(dim=dim,
             seed=0)
 
 # Train the ESN with the training data
-crcm.train(U_tv, Y_tv)
+crcm.train(data)
 
-# Test the ESN with the test data
-Y_pred = crcm.forward(U_test)
+# # Test the ESN with the test data
+# Y_pred = crcm.forward(U_test)

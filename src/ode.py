@@ -88,8 +88,8 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
 
         Returns:
             U_washout: washout data
-            U_tv: training + validation data
-            Y_tv: training + validation data to match at next timestep
+            U_train: training + validation data
+            Y_train: training + validation data to match at next timestep
             U_test: test data
             Y_test: test data to match at next timestep
             norm: normalisation factor
@@ -124,16 +124,16 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     U_washout   = U[:N_washout].copy()
 
     # Training + Validation data
-    U_tv        = U[N_washout       : N_washout+N_train-1].copy() # Inputs
-    Y_tv        = U[N_washout+1     : N_washout+N_train  ].copy() # Data to match at next timestep
+    U_train        = U[N_washout       : N_washout+N_train-1].copy() # Inputs
+    Y_train        = U[N_washout+1     : N_washout+N_train  ].copy() # Data to match at next timestep
 
     # Data to be used for testing
     U_test      = U[N_washout+N_train    : N_washout+N_train+N_test-1].copy()
     Y_test      = U[N_washout+N_train+1  : N_washout+N_train+N_test  ].copy()
 
     # Plotting part of training data to visualize noise
-    plt.plot(U_tv[:N_val,0], c='w', label='Non-noisy')
-    plt.plot(U_tv[:N_val], c='w')
+    plt.plot(U_train[:N_val,0], c='w', label='Non-noisy')
+    plt.plot(U_train[:N_val], c='w')
     
     # Adding noise to training set inputs with sigma_n the noise of the data
     # improves performance and regularizes the error as a function of the hyperparameters
@@ -146,13 +146,22 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
         data_std = np.std(U, axis=0)
         sigma_n = 1e-6     # Controls noise in training inputs (up to 1e-1)
         for i in range(dim):
-            U_tv[:,i] = U_tv[:,i] \
+            U_train[:,i] = U_train[:,i] \
                             + rnd1.normal(0, sigma_n*data_std[i], N_train-1)
 
-        plt.plot(U_tv[:N_val,0], 'r--', label='Noisy')
-        plt.plot(U_tv[:N_val], 'r--')
+        plt.plot(U_train[:N_val,0], 'r--', label='Noisy')
+        plt.plot(U_train[:N_val], 'r--')
 
     plt.legend()
-    plt.show()
+    # plt.show()
 
-    return U_tv, Y_tv, U_test, Y_test
+    # Data is loaded into dictionary
+    data = {'U_washout' : U_washout,
+            'U_train'   : U_train,
+            'Y_train'   : Y_train,
+            'U_test'    : U_test,
+            'Y_test'    : Y_test,
+            'norm'      : norm,
+            'u_mean'    : u_mean}
+
+    return data
