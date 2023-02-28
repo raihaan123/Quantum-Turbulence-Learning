@@ -47,6 +47,8 @@ class CRCM:
 
         N_units     = self.N_units
         dim         = self.dim
+        rnd         = self.rnd
+
 
         # Sparse syntax for the input matrix
         # Rows correspond to reservoir units/neurons, columns to inputs
@@ -62,7 +64,7 @@ class CRCM:
         # Sparse syntax for the reservoir matrix
         # On average only connectivity elements different from zero
         W = self.W = csr_matrix(
-            rnd.uniform(-1, 1, (N_units, N_units)) * (rnd.rand(N_units, N_units) < (1-sparseness)))
+            rnd.uniform(-1, 1, (N_units, N_units)) * (rnd.rand(N_units, N_units) < (1-self.sparseness)))
 
         # The spectral radius of W is the maximum absolute value of its eigenvalues
         self.rho = np.abs(eigs(W, k=1, which='LM', return_eigenvectors=False))[0]
@@ -123,14 +125,22 @@ class CRCM:
         Xa    = np.empty((N+1, self.N_units+1))
         Xa[0] = np.concatenate((x0, self.bias_out))
 
+        # Setting initial reservoir state
+        self.x = Xa[0, :self.N_units]
+
         # Iterate over time steps
         for i in np.arange(1, N+1):
             u   = self.u    = U[i-1]
             self.bias_in    = np.array([np.mean(np.abs((u-self.u_mean)/self.norm))])
 
-            self.x          = Xa[i-1, :self.N_units]
-            step()
-            Xa[i]           = self.x
+            # Redundant now but don't want to break anything!
+            self.x = Xa[i-1, :self.N_units]
+
+            # Advance one time step
+            self.step()
+
+            # Save augmented state
+            Xa[i] = self.x
 
         return Xa
 
@@ -154,6 +164,9 @@ class CRCM:
                 Wout: Optimal output matrix
         """
 
+        # Generate weights
+        self.generate_weights()
+
         # Save data to attributes
         U_washout = self.U_washout = data['U_washout']
         U_train   = self.U_train   = data['U_train']
@@ -173,7 +186,7 @@ class CRCM:
 
         # Washout phase
         # [-1,:x] indexes the last row of the first x columns
-        xf    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,:N_units]
+        xf    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,: self.N_units]
         
         # LHS and RHS are the left and right hand sides of the equation Wout = LHS \ RHS
         LHS   = 0
@@ -190,7 +203,7 @@ class CRCM:
 
             # Open-loop train phase - Xa1 is the augmented reservoir state time series, xf is the final state
             Xa1 = self.open_loop(U_train[ii*N_len:(ii+1)*N_len], xf)[1:]
-            xf  = Xa1[-1,:N_units].copy()
+            xf  = Xa1[-1,:self.N_units].copy()
 
             # Stop timer
             t1  = time.time()

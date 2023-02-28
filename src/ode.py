@@ -153,7 +153,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
         plt.plot(U_train[:N_val], 'r--')
 
     plt.legend()
-    # plt.show()
+    # plt.show()    # Just temporarily!
 
     # Data is loaded into dictionary
     data = {'U_washout' : U_washout,
