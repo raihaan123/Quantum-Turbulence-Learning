@@ -1,4 +1,4 @@
-from ode import generate_data, ddt_lorentz
+from ode import generate_data, ddt_lorentz, ddt_MFE
 from CRCM import CRCM
 
 import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores

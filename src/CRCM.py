@@ -133,7 +133,7 @@ class CRCM:
             u   = self.u    = U[i-1]
             self.bias_in    = np.array([np.mean(np.abs((u-self.u_mean)/self.norm))])
 
-            # Redundant now but don't want to break anything!
+            # Redundant now but don't want to break anything yet!
             self.x = Xa[i-1, :self.N_units]
 
             # Advance one time step
@@ -208,7 +208,10 @@ class CRCM:
             # Stop timer
             t1  = time.time()
 
-            LHS += np.dot(Xa1.T, Xa1) 
+            # Addding updated reservoir state squared to LHS
+            LHS += np.dot(Xa1.T, Xa1)
+
+            # Adding updated reservoir state and output to RHS
             RHS += np.dot(Xa1.T, Y_train[ii*N_len:(ii+1)*N_len])
 
         if N_splits > 1:# to cover the last part of the data that didn't make into the even splits

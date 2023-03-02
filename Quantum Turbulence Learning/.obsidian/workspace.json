@@ -37,24 +37,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Supervisor Meetings/Meeting 4 - Deliverables for Interim.md",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "mode": "source",
                 "source": false
               }
             }
-          },
-          {
-            "id": "81d1a5914261839b",
-            "type": "leaf",
-            "state": {
-              "type": "release-notes",
-              "state": {
-                "currentVersion": "1.1.15"
-              }
-            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -120,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Supervisor Meetings/Meeting 4 - Deliverables for Interim.md",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -137,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Supervisor Meetings/Meeting 4 - Deliverables for Interim.md",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -160,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Supervisor Meetings/Meeting 4 - Deliverables for Interim.md"
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md"
               }
             }
           },
@@ -196,13 +186,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "81d1a5914261839b",
+  "active": "ba15d226ad6de30e",
   "lastOpenFiles": [
     "Launchpad.md",
-    "Theory/Quantum Reservoir Computing Models (QRCMs).md",
-    "Supervisor Meetings/Meeting 4 - Deliverables for Interim.md",
-    "2023-06-03.md",
     "Supervisor Meetings/Meeting 4.md",
+    "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+    "Theory/Quantum Reservoir Computing Models (QRCMs).md",
+    "2023-06-03.md",
     "Diagrams/QRCM Forward Pass.png",
     "Theory/Classical Ridge Regression.md",
     "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",

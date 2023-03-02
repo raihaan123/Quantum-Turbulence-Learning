@@ -31,6 +31,11 @@ def ddt_lorentz(u, params):
                      x*y-beta*z])
 
 
+
+def ddt_MFE():
+    None
+
+
 def forward_euler(ddt, u0, T, *args):
     """
         Forwards Euler method for solving ODEs - coded generically so that it can be used for any ODE system.
