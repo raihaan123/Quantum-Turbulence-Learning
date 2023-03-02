@@ -35,43 +35,37 @@ class QRCM:
         - train(): Train the QRCM.
     """
 
-    # Build the quantum circuit
-    # Remember that the qubits are initialized to |0> followed by the three unitary matrices U(beta), U(4πx^t), U(4πp^t)
-    # p^t is the probability density vector whilst P^(t) is the probability vector - qiskit statevector is a probability vector
 
-    # Initializing the QRCM
     def __init__(self, N_dof=3,
                        seed=0):
         """
+        Initialize the QRCM.
+        
         Here's a brief overview of the dimensions of the matrices and vectors involved in the QRCM:
         -	Input signal X^t: This is a vector of dimension N_dof, representing the input signal to the system at time t
         -	Quantum state |psi^t>: This is a complex vector of dimension 2^n, representing the state of the quantum system at time t
-        -	Probability amplitude vector p^(t+1): This is a real vector of dimension N_dof, representing the squared magnitude of the amplitudes of the quantum state, and providing information about the probability of each state in the quantum system
         -	Output weight matrix W_out: This is a matrix of dimension N_output x N_dof, where N_output represents the number of outputs desired from the system. The matrix maps the information stored in the quantum state to the desired output, effectively reducing the high-dimensional information in the quantum state to a lower-dimensional representation that can be used for further analysis or control
-        -	Evolved probability vector P_tilde^(t+1): This is a vector of dimension N_dof, representing the probability vector after it has been evolved through the reservoir
+        -	Evolved probability vector P_tilde^(t+1): This is a vector of dimension N_dof, representing the probability vector (squared amplitudes) after temporal evolution through the reservoir
         -	Final probability vector P^(t+1): This is a vector of dimension N_dof, representing the final probability vector after the linear combination of the evolved probability vector and the previous probability vector has been performed using the leaking rate epsilon
         """
 
         # Defining attributes of the QRCM
 
-        self.N_dof      = N_dof                                     # Number of degrees of freedom
-        self.N_qubits   = int(np.log2(self.N_dof))                  # Number of qubits
+        self.N_dof      = N_dof                                         # Number of degrees of freedom
+        self.N_qubits   = int(np.ceil(np.log2(self.N_dof)))             # Number of qubits
+        print("Number of qubits: ", self.N_qubits)
 
-        self.seed       = seed                                      # Set the seed for the random number generator
-        self.rnd        = np.random.RandomState(self.seed)          # Random state object
+        self.seed       = seed                                          # Set the seed for the random number generator
+        self.rnd        = np.random.RandomState(self.seed)              # Random state object
 
-        self.X          = np.zeros((self.N_dof, 1))                 # X^t is the latest input signal - this is a vector of dimension N_dof
-        self.P          = np.random.dirichlet(self.N_dof)           # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
-        self.beta       = self.rnd.uniform(0, 2*pi, self.N_qubits)  # Beta is random rotation vector - this is a real vector of dimension N_qubits
+        self.X          = np.zeros((self.N_dof))                        # X^t is the latest input signal - this is a vector of dimension N_dof
+        self.P          = self.rnd.dirichlet(np.ones(self.N_dof))       # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
+        self.beta       = self.rnd.uniform(0, 2*pi, self.N_qubits)      # Beta is random rotation vector - this is a real vector of dimension N_qubits
 
-        self.psi        = np.zeros((2**self.N_qubits, 1))           # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
+        self.psi        = np.zeros((2**self.N_qubits, 1))               # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
 
-        self.eps        = 0.1                                       # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
+        self.eps        = 0.1                                           # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
 
-        ### Archive ###
-        # self.p = self.rnd.uniform(0, 1, self.N_dof)
-        # self.p /= np.linalg.norm(self.p)
-        # self.P = self.p**2
 
     def build_circuit(self):
         """
@@ -91,7 +85,6 @@ class QRCM:
         cr = self.cr    = ClassicalRegister(n)
         self.qc         = QuantumCircuit(qr, cr)
 
-        # Note that beta is a random vector of rotation angles as defined in the paper
         # Note that the qubits are initialized to |0> so the first unitary matrix is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
 
         # Loading the reservoir state parameters
@@ -100,23 +93,25 @@ class QRCM:
         b = self.beta
 
         # Add the unitary matrices
-        self.add_U(4 * pi .* P)
-        self.add_U(4 * pi .* X)
+        self.add_U(4 * pi * P)
+        # Add a divider
+        self.qc.barrier()
+        self.add_U(4 * pi * X)
+        self.qc.barrier()
         self.add_U(b)
 
 
     def add_U(self, theta):
         """
-        Applies a block U(theta) to the quantum circuit 
-            - In the form of an RY gate on qubit i followed by a CNOT gate from i to i+1
+        Applies a block U(theta) to the quantum circuit
 
         Args:
             theta (float): Rotation angle vector - size N_qubits (therefore only N_qubits-1 CNOT gates are needed)
 
         Saves:
             self.qc (QuantumCircuit): Quantum circuit object
-            
-        Note from the paper:
+
+        Note from the paper regarding classical data loading:
         "The combination of RY and CNOT gates is continued until the last qubit is reached.
          There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
         """
@@ -125,20 +120,34 @@ class QRCM:
         for i, angle in enumerate(theta):
 
             # If on the last qubit, reset i to 0
-            j = i % self.N_qubits-1     # -1 because we want to start at 0
+            j = i % (self.N_qubits-1)     # -1 because we want to start at 0
 
             # Apply the RY and CNOT gates
             self.qc.ry(angle, self.qr[j]) 
             self.qc.cx(self.qr[j], self.qr[j+1])
+            
+            # Add a barrier j == N_qubits-2
+            if j == self.N_qubits-2:
+                self.qc.barrier()
 
+        # Plot the circuit using the built-in plot function - open in a new window (not ipynb!)
+        print("Circuit diagram: ")
+        print(self.qc.draw(output='text'))
+        # self.qc.draw(output='mpl', filename='QRCM_circuit.png')
+        
 
-    # Run the QRCM in open-loop mode
     def open_loop(self):
+        """
+        Run the QRCM in open-loop mode
+        """
+        
         None
 
 
-    # Train the QRCM
     def train(self, data):
+        """
+        Train the QRCM
+        """
 
         # Save data to attributes
         U_washout = self.U_washout = data['U_washout']
