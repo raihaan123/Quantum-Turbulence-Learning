@@ -115,18 +115,21 @@ class QRCM:
 
         Saves:
             self.qc (QuantumCircuit): Quantum circuit object
+            
+        Note from the paper:
+        "The combination of RY and CNOT gates is continued until the last qubit is reached.
+         There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
         """
-        
-        # Repeat for each qubit
-        for i, qubit in enumerate(self.qr):
-            
-            # Apply the RY gate
-            self.qc.ry(theta[i], qubit) 
-            
-            # Apply the CNOT gate except for the last qubit
-            if i < self.N_qubits-1:
-                self.qc.cx(qubit, self.qr[i+1])
 
+        # Repeat for each qubit
+        for i, angle in enumerate(theta):
+
+            # If on the last qubit, reset i to 0
+            j = i % self.N_qubits-1     # -1 because we want to start at 0
+
+            # Apply the RY and CNOT gates
+            self.qc.ry(angle, self.qr[j]) 
+            self.qc.cx(self.qr[j], self.qr[j+1])
 
 
     # Run the QRCM in open-loop mode
