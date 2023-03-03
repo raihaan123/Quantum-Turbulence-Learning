@@ -37,7 +37,7 @@ data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 
 # Initialise the QRCM
-qrcm = QRCM()
+qrcm = QRCM(dim=dim)
 
 # Train the QRCM with the training data
 qrcm.train(data)
