@@ -172,7 +172,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     return data
 
 
-# ### TESTING THE DATA GENERATION ###
+### TESTING THE DATA GENERATION ###
 # # Data generation parameters
 # dim             = 3
 # upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator

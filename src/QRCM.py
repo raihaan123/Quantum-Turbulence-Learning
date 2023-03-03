@@ -55,7 +55,7 @@ class QRCM:
         # Defining attributes of the QRCM
 
         self.N_in           = dim                               # Number of degrees of freedom of dynamical system
-        n = self.N_qubits   = int(np.ceil(np.log2(dim)))        # Number of qubits required to represent the input signal
+        n = self.N_qubits   = int(np.ceil(np.log2(dim)))        # Minimum number of qubits required - can be increased for better performance
         N   = self.N_dof    = 2**n                              # Number of degrees of freedom of quantum reservoir
 
         self.seed           = seed                              # Set the seed for the random number generator
@@ -68,6 +68,7 @@ class QRCM:
 
         self.eps            = 0.1                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.plot           = plot                              # Plot the circuit if True
+
 
     def build_circuit(self):
         """
@@ -111,18 +112,17 @@ class QRCM:
 
     # @debug
     def add_U(self, theta):
-        """
-        Applies a block U(theta) to the quantum circuit
+        """ Applies a block U(theta) to the quantum circuit
+        
+        Note from the paper regarding classical data loading:
+            "The combination of RY and CNOT gates is continued until the last qubit is reached.
+            There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
 
         Args:
             theta (float): Rotation angle vector - size N_qubits (therefore only N_qubits-1 CNOT gates are needed)
 
         Saves:
             self.qc (QuantumCircuit): Quantum circuit object
-
-        Note from the paper regarding classical data loading:
-        "The combination of RY and CNOT gates is continued until the last qubit is reached.
-         There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
         """
         
         n = self.N_qubits
@@ -147,8 +147,7 @@ class QRCM:
 
     # @debug
     def open_loop(self, shots=2048):
-        """
-        Run the QRCM in open-loop mode
+        """ Run the QRCM in open-loop mode
         
         Args:
             shots (int): Number of shots to run the circuit for
@@ -183,32 +182,50 @@ class QRCM:
 
     # @debug
     def train(self, data):
-        """
-        Train the QRCM
-        """
+        """ Train the QRCM
         
-        print(f"\nBooting QRCM...\nRandom probability vector: {self.P}")
-        
+        Args:
+            data (dict): Dictionary containing the training data
+            
+        Saves:
+            self.W_out (np.ndarray): Output weight matrix (optimized via ridge regression)
+        """
+
         # Save data to attributes
         U_washout = self.U_washout = data['U_washout']
         U_train   = self.U_train   = data['U_train']
         Y_train   = self.Y_train   = data['Y_train']
-        u_mean    = self.u_mean    = data['u_mean']
+        U_test    = self.U_test    = data['U_test']
+        Y_test    = self.Y_test    = data['Y_test']
         norm      = self.norm      = data['norm']
+        u_mean    = self.u_mean    = data['u_mean']
 
         # Initialize the output weight matrix randomly - W_out is only parameter to be trained (via ridge regression)
         self.W_out = self.rnd.uniform(-1, 1, (self.N_in, self.N_dof))
 
+        print(f"\nBooting QRCM...\n\
+            Random probability vector: {self.P}\n\
+            Washing out...")
+
         # For each row in U_washout, build the circuit and run it - no need to save the output Y
-        print("\nWashing out...")
         for i, row in enumerate(U_washout):
             print(f"\nRow {i+1}/{len(U_washout)} : X = {row}")
             self.X = row
             self.open_loop()
+
+        # For each row in U_train, build the circuit and run it - save the reservoir state psi^t in R
+        # W_out* = U_tg * R^T (RR^T + beta*I)^-1
+        # W_out has dimensions [N_in x N_dof], U_tg has dimensions [N_in x N_train], and R has dimensions [N_dof x N_train]
+        # U_tg is the target output matrix, and is the same as Y_train^T - dimensions [N_train x N_in]' = [N_in x N_train]
+
+        print("\nTraining...")
+
+        # Target output matrix
+        self.U_tg = Y_train.T
         
-
-        # Initialize the reservoir state matrix
-        self.R = np.zeros((self.N_dof, self.N_dof))
-
-        # Initialize the target output matrix
-        self.U_tg = np.zeros((self.N_dof, self.N_dof))
+        for i, row in enumerate(U_train):
+            print(f"\nRow {i+1}/{len(U_train)} : X = {row}")
+            self.X = row
+            self.open_loop()
+            self.R[:,i] = self.psi        # Append the output signal to the R matrix
+            
