@@ -137,8 +137,8 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     Y_test      = U[N_washout+N_train+1  : N_washout+N_train+N_test  ].copy()
 
     # Plotting part of training data to visualize noise
-    plt.plot(U_train[:N_val,0], c='w', label='Non-noisy')
-    plt.plot(U_train[:N_val], c='w')
+    # plt.plot(U_train[:N_val,0], c='w', label='Non-noisy')
+    # plt.plot(U_train[:N_val], c='w')
     
     # Adding noise to training set inputs with sigma_n the noise of the data
     # improves performance and regularizes the error as a function of the hyperparameters
@@ -154,10 +154,10 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
             U_train[:,i] = U_train[:,i] \
                             + rnd1.normal(0, sigma_n*data_std[i], N_train-1)
 
-        plt.plot(U_train[:N_val,0], 'r--', label='Noisy')
-        plt.plot(U_train[:N_val], 'r--')
+        # plt.plot(U_train[:N_val,0], 'r--', label='Noisy')
+        # plt.plot(U_train[:N_val], 'r--')
 
-    plt.legend()
+    # plt.legend()
     # plt.show()    # Just temporarily!
 
     # Data is loaded into dictionary
@@ -181,4 +181,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
 # data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 # # Print data keys and shapes
-# [print(key, value.shape) for key, value in data.items()]
+# [print(key, value) for key, value in data.items()]
+
+# norm [34.93270814 45.44324541 35.74071098]
+# u_mean [-0.53059272 -0.50746428 24.16344666]
