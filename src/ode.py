@@ -59,7 +59,7 @@ def forward_euler(ddt, u0, T, *args):
     return u
 
 
-def solve_ode(N, dt, u0, params=[8/3, 28, 10], ddt=ddt_lorentz):
+def solve_ode(N, dt, u0, params=[8/3, 28, 3], ddt=ddt_lorentz):
     """
         Solves the ODEs for N time steps starting from u0.
         Returned values are normalized.
@@ -112,7 +112,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     N_lyap      = int(t_lyap/dt)
 
     # Number of time steps for washout, training, validation and testing
-    N = np.hstack((np.array([50]), np.array([50, 3, 1000]) * N_lyap))
+    N = np.hstack((np.array([50]), np.array([50, 1, 100]) * N_lyap))
     N_washout, N_train, N_val, N_test = N
 
     # Generate data for training, validation and testing (and washout period)

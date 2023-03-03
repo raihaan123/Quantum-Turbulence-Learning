@@ -41,7 +41,7 @@ class CRCM:
         self.rnd            = np.random.RandomState(seed)
 
 
-    @debug
+    # @debug
     def generate_weights(self):
         """ Generates the input weights and reservoir weights (Win and W)
         
@@ -85,12 +85,12 @@ class CRCM:
 
 
     
-    @debug
+    # @debug
     def optimize(self):
         None
 
 
-    @debug
+    # @debug
     def step(self):
         """ Advances one ESN time step
 
@@ -119,7 +119,7 @@ class CRCM:
         self.x      = np.concatenate((x_post, self.bias_out))
 
 
-    @debug
+    # @debug
     def open_loop(self, U, x0):
         """ Advances ESN in open-loop.
 
@@ -158,7 +158,7 @@ class CRCM:
         return Xa
 
 
-    @debug
+    # @debug
     def train(self, data, tikh=1e-6, sigma_in=1, rho=1, N_splits=4):
         """ Trains the ESN
 

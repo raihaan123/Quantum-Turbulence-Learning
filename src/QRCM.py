@@ -33,14 +33,14 @@ class QRCM:
 
 
     def __init__(self, dim=3,
-                       seed=0,
+                       seed=1,
                        plot=False):
         """
         Initialize the QRCM.
         
         Here's a brief overview of the dimensions of the matrices and vectors involved in the QRCM:
-        -	Input signal X^t: This is a vector of dimension N_dof, representing the input signal to the system at time t
-        -	Quantum state |psi^t>: This is a complex vector of dimension 2^n, representing the state of the quantum system at time t
+        -	Input signal X^t: This is a vector of dimension N_in, representing the input signal to the system at time t
+        -	Quantum state |psi^t>: This is a complex vector of dimension 2^n=N_dof, representing the state of the quantum system at time t
         -	Output weight matrix W_out: This is a matrix of dimension N_output x N_dof, where N_output represents the number of outputs desired from the system. The matrix maps the information stored in the quantum state to the desired output, effectively reducing the high-dimensional information in the quantum state to a lower-dimensional representation that can be used for further analysis or control
         -	Evolved probability vector P_tilde^(t+1): This is a vector of dimension N_dof, representing the probability vector (squared amplitudes) after temporal evolution through the reservoir
         -	Final probability vector P^(t+1): This is a vector of dimension N_dof, representing the final probability vector after the linear combination of the evolved probability vector and the previous probability vector has been performed using the leaking rate epsilon
@@ -49,7 +49,8 @@ class QRCM:
         # Defining attributes of the QRCM
 
         self.N_in           = dim                               # Number of degrees of freedom of dynamical system
-        n = self.N_qubits   = int(np.ceil(np.log2(dim)))        # Minimum number of qubits required - can be increased for better performance
+        # n = self.N_qubits   = int(np.ceil(np.log2(dim)))      # Minimum number of qubits required - can be increased for better performance
+        n = self.N_qubits   = 2
         N   = self.N_dof    = 2**n                              # Number of degrees of freedom of quantum reservoir
 
         self.seed           = seed                              # Set the seed for the random number generator
@@ -58,50 +59,10 @@ class QRCM:
         self.psi            = np.zeros((N))                     # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
         self.X              = np.zeros((dim))                   # X^t is the latest input signal - this is a vector of dimension N_in
         self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
-        self.beta           = self.rnd.uniform(0, 2*pi, N)      # Beta is random rotation vector - this is a real vector of dimension N_dof
+        self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
 
         self.eps            = 0.1                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.plot           = plot                              # Plot the circuit if True
-
-
-    def build_circuit(self):
-        """
-        Build the quantum circuit!
-
-        Args:
-            None
-
-        Saves:
-            self.qc (QuantumCircuit): Quantum circuit object
-
-        """
-
-        n = self.N_qubits
-
-        # Define the quantum and classical registers in the circuit
-        # Note that the qubits are initialized to |0> by default
-        qr = self.qr    = QuantumRegister(n)
-        cr = self.cr    = ClassicalRegister(n)
-        self.qc         = QuantumCircuit(qr, cr)
-
-        # Loading the reservoir state parameters
-        P = self.P
-        X = self.X
-        b = self.beta
-
-        # Add the unitary transformations to the circuit separated by barriers
-        # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.add_U(4 * pi * P)
-        self.qc.barrier()
-        self.add_U(4 * pi * X)
-        self.qc.barrier()
-        self.add_U(b)
-        
-        # Measure all the qubits in the standard computational basis
-        self.qc.measure(self.qr, self.cr)
-        
-        # Plot the circuit using the built-in plot function
-        if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
 
     # @debug
@@ -128,15 +89,51 @@ class QRCM:
             loop = i // n       # loop is the number of times all qubits have been used
 
             # Apply the RY gate
-            self.qc.ry(angle, self.qr[j])
+            self.qc.ry(angle, j)
             
             # If not on the last qubit, apply the CNOT gate
-            if j < n-1: self.qc.cx(self.qr[j], self.qr[j+1])
-            else:       self.qc.cx(self.qr[j], self.qr[j-1])    # As per the note above
-                
+            if j < n-1: self.qc.cx(j, j+1)
+            else:       self.qc.cx(j, j-1)    # As per the note above
+
                 
             # Add a barrier if the last qubit has been used (just for visual clarity)
             if j == n-1:  self.qc.barrier()
+
+
+    def build_circuit(self):
+        """
+        Build the quantum circuit!
+
+        Args:
+            None
+
+        Saves:
+            self.qc (QuantumCircuit): Quantum circuit object
+
+        """
+
+        n = self.N_qubits
+
+        # Define the quantum and classical registers in the circuit
+        # Note that the qubits are initialized to |0> by default
+        qr = self.qr    = QuantumRegister(n)
+        self.qc         = QuantumCircuit(qr)
+
+        # Loading the reservoir state parameters
+        P = self.P
+        X = self.X
+        b = self.beta
+
+        # Add the unitary transformations to the circuit separated by barriers
+        # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
+        self.add_U(4 * pi * P)
+        self.qc.barrier()
+        self.add_U(4 * pi * X)
+        self.qc.barrier()
+        self.add_U(b)
+        
+        # Plot the circuit using the built-in plot function
+        if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
 
     # @debug
@@ -185,12 +182,6 @@ class QRCM:
         Y_test    = self.Y_test    = data['Y_test']
         norm      = self.norm      = data['norm']
         u_mean    = self.u_mean    = data['u_mean']
-        
-        # Crop U_train and Y_train to 500 rows
-        U_train = U_train[:2000]
-        Y_train = Y_train[:2000]
-        U_test = U_test[:500]
-        Y_test = Y_test[:500]
 
         # Initialize the output weight matrix randomly - W_out is only parameter to be trained (via ridge regression)
         self.W_out = self.rnd.uniform(-1, 1, (self.N_in, self.N_dof))
@@ -224,14 +215,16 @@ class QRCM:
                 self.open_loop()
                 self.R[:,i] = self.psi        # Append the output signal to the R matrix
         
+        # print(f"R = {self.R}")
+
         # Calculate the optimal output weight matrix
-        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.beta * np.eye(self.N_dof))))
+        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + 1e-6 * np.eye(self.N_dof))))
         
         # Save the output weight matrix to a file - try deserializing it
         np.save("W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
 
         Y_pred = np.zeros_like(Y_test)
-        norm = np.linalg.norm(Y_test)
+        norm = np.linalg.norm(Y_test)        
 
         with tqdm(total=len(U_test), desc="Testing") as pbar:
             for i, row in enumerate(U_test):
