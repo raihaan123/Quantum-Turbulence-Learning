@@ -5,6 +5,8 @@ import numpy as np
 from numpy import pi
 import time
 
+from decorators import debug
+
 # data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True) --> return type is dictionary
 #
 # data : {'U_washout' : U_washout,
@@ -36,7 +38,7 @@ class QRCM:
     """
 
 
-    def __init__(self, N_dof=3,
+    def __init__(self, N_dof=5,
                        seed=0):
         """
         Initialize the QRCM.
@@ -52,8 +54,7 @@ class QRCM:
         # Defining attributes of the QRCM
 
         self.N_dof      = N_dof                                         # Number of degrees of freedom
-        self.N_qubits   = int(np.ceil(np.log2(self.N_dof)))             # Number of qubits
-        print("Number of qubits: ", self.N_qubits)
+        self.N_qubits   = int(np.ceil(np.log2(self.N_dof)))             # Number of qubits required to represent the input signal
 
         self.seed       = seed                                          # Set the seed for the random number generator
         self.rnd        = np.random.RandomState(self.seed)              # Random state object
@@ -81,11 +82,12 @@ class QRCM:
 
         n = self.N_qubits
 
+        # Define the quantum and classical registers in the circuit
         qr = self.qr    = QuantumRegister(n)
         cr = self.cr    = ClassicalRegister(n)
         self.qc         = QuantumCircuit(qr, cr)
 
-        # Note that the qubits are initialized to |0> so the first unitary matrix is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
+        # Note that the qubits are initialized to |0> so the first unitary transformation is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
 
         # Loading the reservoir state parameters
         P = self.P
@@ -94,13 +96,18 @@ class QRCM:
 
         # Add the unitary matrices
         self.add_U(4 * pi * P)
-        # Add a divider
         self.qc.barrier()
         self.add_U(4 * pi * X)
         self.qc.barrier()
         self.add_U(b)
+        
+        # Plot the circuit using the built-in plot function - open in a new window (not ipynb!)
+        # print("Circuit diagram: ")
+        # print(self.qc.draw(output='text'))
+        self.qc.draw(output='mpl', filename='QRCM_circuit.png')
 
 
+    @debug
     def add_U(self, theta):
         """
         Applies a block U(theta) to the quantum circuit
@@ -115,25 +122,25 @@ class QRCM:
         "The combination of RY and CNOT gates is continued until the last qubit is reached.
          There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
         """
+        
+        n = self.N_qubits
 
         # Repeat for each qubit
         for i, angle in enumerate(theta):
 
-            # If on the last qubit, reset i to 0
-            j = i % (self.N_qubits-1)     # -1 because we want to start at 0
+            j = i % n           # j is the qubit index and loops from 0 to n-1
+            loop = i // n       # loop is the number of times all qubits have been used
 
-            # Apply the RY and CNOT gates
-            self.qc.ry(angle, self.qr[j]) 
-            self.qc.cx(self.qr[j], self.qr[j+1])
+            # Apply the RY gate
+            self.qc.ry(angle, self.qr[j])
             
-            # Add a barrier j == N_qubits-2
-            if j == self.N_qubits-2:
-                self.qc.barrier()
-
-        # Plot the circuit using the built-in plot function - open in a new window (not ipynb!)
-        print("Circuit diagram: ")
-        print(self.qc.draw(output='text'))
-        # self.qc.draw(output='mpl', filename='QRCM_circuit.png')
+            # If not on the last qubit, apply the CNOT gate
+            if j < n-1: self.qc.cx(self.qr[j], self.qr[j+1])
+            else:       self.qc.cx(self.qr[j], self.qr[j-1])    # As per the note above
+                
+                
+            # Add a barrier if the last qubit has been used (just for visual clarity)
+            if j == n-1:  self.qc.barrier()
         
 
     def open_loop(self):
