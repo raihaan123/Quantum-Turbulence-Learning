@@ -33,7 +33,7 @@ class QRCM:
 
 
     def __init__(self, dim=3,
-                       seed=1,
+                       seed=0,
                        plot=False):
         """
         Initialize the QRCM.
@@ -61,7 +61,7 @@ class QRCM:
         self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
         self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
 
-        self.eps            = 0.1                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
+        self.eps            = 0.0                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.plot           = plot                              # Plot the circuit if True
 
 
@@ -137,7 +137,7 @@ class QRCM:
 
 
     # @debug
-    def open_loop(self, shots=2048):
+    def open_loop(self):
         """ Run the QRCM in open-loop mode
         
         Args:
@@ -180,11 +180,10 @@ class QRCM:
         Y_train   = self.Y_train   = data['Y_train']
         U_test    = self.U_test    = data['U_test']
         Y_test    = self.Y_test    = data['Y_test']
-        norm      = self.norm      = data['norm']
-        u_mean    = self.u_mean    = data['u_mean']
 
         # Initialize the output weight matrix randomly - W_out is only parameter to be trained (via ridge regression)
-        self.W_out = self.rnd.uniform(-1, 1, (self.N_in, self.N_dof))
+        # self.W_out = self.rnd.uniform(-1, 1, (self.N_in, self.N_dof))
+        self.W_out = np.load('W_out.npy')
 
         print(f"\nBooting QRCM...\n")
         
@@ -214,17 +213,14 @@ class QRCM:
                 self.X = row
                 self.open_loop()
                 self.R[:,i] = self.psi        # Append the output signal to the R matrix
-        
-        # print(f"R = {self.R}")
 
         # Calculate the optimal output weight matrix
-        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + 1e-6 * np.eye(self.N_dof))))
+        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + 1e-10 * np.eye(self.N_dof))))
         
         # Save the output weight matrix to a file - try deserializing it
         np.save("W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
 
-        Y_pred = np.zeros_like(Y_test)
-        norm = np.linalg.norm(Y_test)        
+        Y_pred = np.zeros_like(Y_test)   
 
         with tqdm(total=len(U_test), desc="Testing") as pbar:
             for i, row in enumerate(U_test):
@@ -238,12 +234,17 @@ class QRCM:
         self.err_ts = np.abs(Y_test - Y_pred)
         
         # Plot the error time series for all N_in dimensions
-        plt.figure()
+        # plt.figure()
         
-        for i in range(self.N_in):
-            plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
-        plt.title("Absolute Error Time Series")
-        plt.legend()
-        plt.xlabel("Time Step")
-        plt.ylabel("Absolute Error")
-        plt.show()
+        # for i in range(self.N_in):
+        #     plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
+        # plt.title("Absolute Error Time Series")
+        # plt.legend()
+        # plt.xlabel("Time Step")
+        # plt.ylabel("Absolute Error")
+        # plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
+        # plt.show()
+        
+        # Find MSE
+        print(f"\nMSE for each dimension: {np.mean(self.err_ts**2, axis=0)}")
+        print(f"\nTotal MSE: {np.mean(self.err_ts**2)}")

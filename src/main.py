@@ -19,7 +19,7 @@ import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 # Data generation parameters
 dim             = 3
 upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
-dt              = 0.005 * upsample      # Time step
+dt              = 0.01 * upsample      # Time step
 
 # Solve the ODE system using generate_data() from ode.py
 data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)

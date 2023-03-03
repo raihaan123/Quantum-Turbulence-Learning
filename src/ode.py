@@ -112,7 +112,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     N_lyap      = int(t_lyap/dt)
 
     # Number of time steps for washout, training, validation and testing
-    N = np.hstack((np.array([50]), np.array([50, 1, 100]) * N_lyap))
+    N = np.hstack((np.array([50]), np.array([30, 1, 10]) * N_lyap))
     N_washout, N_train, N_val, N_test = N
 
     # Generate data for training, validation and testing (and washout period)
