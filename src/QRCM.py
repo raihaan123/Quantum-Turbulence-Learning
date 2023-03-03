@@ -24,7 +24,7 @@ class QRCM:
     1) Intialize the qubits to |0>, the input data is given as |x^t>.
     2) Apply unitary matrices U(beta), U(4πx^t), U(4πp^t) to the qubits to evolve the state of the reservoir |ψ^(t+1)>.
     3) Measure the final state of the reservoir to get the probability vector P^(t+1).
-    4) Calculate the state of the reservoir X^(t+1) from P^(t+1) using the output weight matrix W_out.
+    4) Calculate the state of the dynamical system X^(t+1) from P^(t+1) using the output weight matrix W_out.
     5) Repeat steps 2-4 for T training instances with data instances {x^(t+1), x_tg^(t+1)} where tg is target.
     6) Optimize the output weight matrix W_out using the mean squared cost function with a Tikhonov regularization term.
     7) The optimized output matrix is given by W_out* = U_tg * R^T (RR^T + beta*I)^-1, where U_tg is a matrix of target outputs and R is a matrix of reservoir states.
@@ -38,7 +38,7 @@ class QRCM:
     """
 
 
-    def __init__(self, dim=3,
+    def __init__(self, dim=4,
                        seed=0):
         """
         Initialize the QRCM.
@@ -105,10 +105,10 @@ class QRCM:
         self.qc.measure(self.qr, self.cr)
         
         # Plot the circuit using the built-in plot function
-        self.qc.draw(output='mpl', filename='QRCM_circuit.png')
+        # self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
 
-    @debug
+    # @debug
     def add_U(self, theta):
         """
         Applies a block U(theta) to the quantum circuit
@@ -142,21 +142,40 @@ class QRCM:
                 
             # Add a barrier if the last qubit has been used (just for visual clarity)
             if j == n-1:  self.qc.barrier()
-        
 
-    def open_loop(self):
+
+    # @debug
+    def open_loop(self, shots=2048):
         """
         Run the QRCM in open-loop mode
         """
+
+        # Build the circuit
+        self.build_circuit()
+
+        # Run the circuit - save probability vector using statevector_simulator
+        self.psi = execute(self.qc, Aer.get_backend('statevector_simulator')).result().get_statevector()
+        self.P_tilde = np.abs(self.psi)**2
+
+        # Solve for the final probability vector P^(t+1) using the leaking rate epsilon
+        self.P = self.eps * self.P_tilde + (1 - self.eps) * self.P
         
-        None
+        # Assert that the probability vector is valid
+        assert np.isclose(np.sum(self.P), 1), "Probability vector is not valid!"
+        print(f"Updated probability vector: {self.P}")
+
+        # Multiply by W_out to get the output signal
+        self.Y = np.dot(self.W_out, self.P)
 
 
+    # @debug
     def train(self, data):
         """
         Train the QRCM
         """
-
+        
+        print(f"\nBooting QRCM...\nRandom probability vector: {self.P}")
+        
         # Save data to attributes
         U_washout = self.U_washout = data['U_washout']
         U_train   = self.U_train   = data['U_train']
@@ -164,8 +183,16 @@ class QRCM:
         u_mean    = self.u_mean    = data['u_mean']
         norm      = self.norm      = data['norm']
 
-        # Initialize the output weight matrix randomly
-        self.W_out = np.zeros((self.N_dof, self.N_dof))
+        # Initialize the output weight matrix randomly - W_out is only parameter to be trained (via ridge regression)
+        self.W_out = self.rnd.uniform(-1, 1, (self.N_dof, self.N_dof))
+
+        # For each row in U_washout, build the circuit and run it - no need to save the output Y
+        print("\nWashing out...")
+        for i, row in enumerate(U_washout):
+            print(f"\nRow {i+1}/{len(U_washout)} : X = {row}")
+            self.X = row
+            self.open_loop()
+        
 
         # Initialize the reservoir state matrix
         self.R = np.zeros((self.N_dof, self.N_dof))

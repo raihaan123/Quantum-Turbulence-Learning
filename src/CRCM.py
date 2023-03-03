@@ -8,8 +8,7 @@ from decorators import debug
 
 
 class CRCM:
-    """
-    Class for the CRCM - Classical Reservoir Computing Model
+    """ Class for the CRCM - Classical Reservoir Computing Model
 
     Attributes:
         N_units: number of reservoir units
@@ -44,8 +43,17 @@ class CRCM:
 
     @debug
     def generate_weights(self):
-        """
-        Generates the input weights and reservoir weights (Win and W)
+        """ Generates the input weights and reservoir weights (Win and W)
+        
+        Args (self):
+            N_units: number of reservoir units
+            dim: dimension of the ODE system
+            rnd: random number generator
+            
+        Saves:
+            Win: input weights
+            W: reservoir weights
+            rho: spectral radius of W
         """
 
         N_units     = self.N_units

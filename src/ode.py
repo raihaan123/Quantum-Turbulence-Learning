@@ -170,3 +170,15 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
             'u_mean'    : u_mean}
 
     return data
+
+
+# ### TESTING THE DATA GENERATION ###
+# # Data generation parameters
+# dim             = 3
+# upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
+# dt              = 0.005 * upsample      # Time step
+
+# data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
+
+# # Print data keys and shapes
+# [print(key, value.shape) for key, value in data.items()]

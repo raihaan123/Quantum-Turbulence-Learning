@@ -21,7 +21,7 @@ upsample        = 2                     # To increase the dt of the ESN wrt the 
 dt              = 0.005 * upsample      # Time step
 
 # Solve the ODE system using generate_data() from ode.py
-# data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
+data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 # # Initialise the ESN
 # crcm = CRCM(dim=dim,
@@ -37,7 +37,7 @@ dt              = 0.005 * upsample      # Time step
 
 
 # Initialise the QRCM
-qrcm = QRCM(dim=dim)
+qrcm = QRCM()
 
-# Just testing here - this wil be self contained in the train and forward methods
-qrcm.build_circuit()
+# Train the QRCM with the training data
+qrcm.train(data)
