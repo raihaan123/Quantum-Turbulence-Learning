@@ -38,7 +38,7 @@ class QRCM:
     """
 
 
-    def __init__(self, N_dof=5,
+    def __init__(self, dim=3,
                        seed=0):
         """
         Initialize the QRCM.
@@ -53,7 +53,7 @@ class QRCM:
 
         # Defining attributes of the QRCM
 
-        self.N_dof      = N_dof                                         # Number of degrees of freedom
+        self.N_dof      = dim                                           # Number of degrees of freedom
         self.N_qubits   = int(np.ceil(np.log2(self.N_dof)))             # Number of qubits required to represent the input signal
 
         self.seed       = seed                                          # Set the seed for the random number generator
@@ -94,16 +94,17 @@ class QRCM:
         X = self.X
         b = self.beta
 
-        # Add the unitary matrices
+        # Add the unitary transformations to the circuit separated by barriers
         self.add_U(4 * pi * P)
         self.qc.barrier()
         self.add_U(4 * pi * X)
         self.qc.barrier()
         self.add_U(b)
         
-        # Plot the circuit using the built-in plot function - open in a new window (not ipynb!)
-        # print("Circuit diagram: ")
-        # print(self.qc.draw(output='text'))
+        # Measure all the qubits in the standard computational basis
+        self.qc.measure(self.qr, self.cr)
+        
+        # Plot the circuit using the built-in plot function
         self.qc.draw(output='mpl', filename='QRCM_circuit.png')
 
 

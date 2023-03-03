@@ -37,6 +37,7 @@ dt              = 0.005 * upsample      # Time step
 
 
 # Initialise the QRCM
-qrcm = QRCM()
+qrcm = QRCM(dim=dim)
 
+# Just testing here - this wil be self contained in the train and forward methods
 qrcm.build_circuit()
