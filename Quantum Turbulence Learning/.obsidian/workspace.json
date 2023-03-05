@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Supervisor Meetings/Meeting 3.md",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "mode": "preview",
                 "source": false
               }
@@ -41,8 +41,7 @@
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -108,7 +107,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Diagrams/QRCM_circuit.png",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -125,7 +124,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Diagrams/QRCM_circuit.png",
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -148,7 +147,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Diagrams/QRCM_circuit.png"
+                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md"
               }
             }
           },
@@ -190,10 +189,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ba15d226ad6de30e",
+  "active": "8c8d6cc8692792e3",
   "lastOpenFiles": [
-    "Diagrams/QRCM Forward Pass.png",
+    "Supervisor Meetings/Meeting 3.md",
     "Diagrams/QRCM_circuit.png",
+    "Diagrams/QRCM Forward Pass.png",
     "Launchpad.md",
     "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
     "Supervisor Meetings/Meeting 4.md",
@@ -201,7 +201,6 @@
     "2023-06-03.md",
     "Theory/Classical Ridge Regression.md",
     "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
-    "Supervisor Meetings/Meeting 3.md",
     "Supervisor Meetings/Meeting 1.md"
   ]
 }

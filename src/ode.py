@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+# Local imports
+from decorators import debug
+
 # Configure matplotlib for dark background and latex fonts
 plt.style.use('dark_background')
 plt.rcParams.update({'text.usetex'      : True,
@@ -24,6 +27,7 @@ def ddt_lorentz(u, params):
         Returns the time derivative of u - specific to the Lorentz system of ODEs.
     """
     beta, rho, sigma    = params
+
     x, y, z             = u
 
     return np.array([sigma*(y-x),
@@ -59,7 +63,35 @@ def forward_euler(ddt, u0, T, *args):
     return u
 
 
-def solve_ode(N, dt, u0, params=[8/3, 28, 3], ddt=ddt_lorentz):
+def RK4(ddt, u0, T, *args):
+    """
+        RK4 method for solving ODEs - coded generically so that it can be used for any ODE system.
+
+        Args:
+            ddt: function that returns the time derivative of u
+            u0: initial condition
+            T: time steps
+            *args: additional arguments to ddt
+
+        Returns:
+            u: Time series of shape (T.size, u0.size)
+    """
+
+    u = np.empty((T.size, u0.size))
+    u[0] = u0
+
+    for i in range(1, T.size):
+        dt = T[i] - T[i-1]
+        k1 = ddt(u[i-1], *args)
+        k2 = ddt(u[i-1] + k1*dt/2, *args)
+        k3 = ddt(u[i-1] + k2*dt/2, *args)
+        k4 = ddt(u[i-1] + k3*dt, *args)
+        u[i] = u[i-1] + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
+
+    return u
+
+
+def solve_ode(N, dt, u0, params=[8/3, 28, 10], ddt=ddt_lorentz):
     """
         Solves the ODEs for N time steps starting from u0.
         Returned values are normalized.
@@ -76,12 +108,13 @@ def solve_ode(N, dt, u0, params=[8/3, 28, 3], ddt=ddt_lorentz):
     """
 
     T = np.arange(N+1) * dt
-    U = forward_euler(ddt, u0, T, params)
+    # U = forward_euler(ddt, u0, T, params)
+    U = RK4(ddt, u0, T, params)
 
     return U
 
 
-def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
+def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True):
     """
         Generates data for training, validation and testing.
         Args:
@@ -105,14 +138,15 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
     N_transient = int(200/dt)
 
     # Runnning transient solution to reach attractor
-    u0   = solve_ode(N_transient, dt/upsample, np.random.random((dim)), ddt=ddt_lorentz)[-1]
+    rnd  = np.random.RandomState(0)
+    u0   = solve_ode(N_transient, dt/upsample, rnd.random((dim)), ddt=ddt_lorentz)[-1]
 
     # Lyapunov time and corresponding time steps
     t_lyap      = 0.906**(-1)     # Lyapunov Time (inverse of largest Lyapunov exponent)
     N_lyap      = int(t_lyap/dt)
 
     # Number of time steps for washout, training, validation and testing
-    N = np.hstack((np.array([50]), np.array([30, 1, 10]) * N_lyap))
+    N = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2], N_sets[3]]) * N_lyap))
     N_washout, N_train, N_val, N_test = N
 
     # Generate data for training, validation and testing (and washout period)
@@ -127,6 +161,7 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
 
     # Washout data
     U_washout   = U[:N_washout].copy()
+    # print(U_washout)
 
     # Training + Validation data
     U_train        = U[N_washout       : N_washout+N_train-1].copy() # Inputs
@@ -154,8 +189,8 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
             U_train[:,i] = U_train[:,i] \
                             + rnd1.normal(0, sigma_n*data_std[i], N_train-1)
 
-        # plt.plot(U_train[:N_val,0], 'r--', label='Noisy')
-        # plt.plot(U_train[:N_val], 'r--')
+    #     plt.plot(U_train[:N_val,0], 'r--', label='Noisy')
+    #     plt.plot(U_train[:N_val], 'r--')
 
     # plt.legend()
     # plt.show()    # Just temporarily!
@@ -173,12 +208,13 @@ def generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True):
 
 
 ### TESTING THE DATA GENERATION ###
-# # Data generation parameters
-# dim             = 3
-# upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
-# dt              = 0.005 * upsample      # Time step
+# Data generation parameters
+dim             = 3
+upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
+dt              = 0.005 * upsample      # Time step
+N_sets          = [50, 50, 3, 1000]       # Washout, training, validation, testing
 
-# data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
+data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 # # Print data keys and shapes
 # [print(key, value) for key, value in data.items()]

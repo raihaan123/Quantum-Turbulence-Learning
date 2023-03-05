@@ -50,7 +50,7 @@ class QRCM:
 
         self.N_in           = dim                               # Number of degrees of freedom of dynamical system
         # n = self.N_qubits   = int(np.ceil(np.log2(dim)))      # Minimum number of qubits required - can be increased for better performance
-        n = self.N_qubits   = 2
+        n = self.N_qubits   = 3
         N   = self.N_dof    = 2**n                              # Number of degrees of freedom of quantum reservoir
 
         self.seed           = seed                              # Set the seed for the random number generator
@@ -61,7 +61,7 @@ class QRCM:
         self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
         self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
 
-        self.eps            = 0.0                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
+        self.eps            = 1                                 # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.plot           = plot                              # Plot the circuit if True
 
 

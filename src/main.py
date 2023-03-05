@@ -2,8 +2,29 @@ from ode import generate_data, ddt_lorentz, ddt_MFE
 from CRCM import CRCM
 from QRCM import QRCM
 import numpy as np
+import wandb
 
 import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
+
+
+# Set up WandB
+# wandb.login()
+# wandb.init(project="Quantum Turbulence Learning")
+
+# sweep_config = {
+#     'method': 'bayes',
+#     'name': 'QRCM sweep',
+#     'metric': {
+#         'name': 'MSE',
+#         'goal': 'minimize'
+#         },
+#     'parameters': {
+#         'qubits': {'values': [2, 3]},
+#         'epsilon': {'min': 0, 'max': 1},
+        
+#     }
+# }
+
 
 ### Currently unused imports ###
 
@@ -19,10 +40,17 @@ import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 # Data generation parameters
 dim             = 3
 upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
-dt              = 0.01 * upsample      # Time step
+dt              = 0.005 * upsample      # Time step
+
+# Define N for washout, training, validation and testing
+N_washout       = 50
+N_train         = 30
+N_val           = 3
+N_test          = 30
+N_sets          = [N_washout, N_train, N_val, N_test]
 
 # Solve the ODE system using generate_data() from ode.py
-data = generate_data(dim, upsample, dt, ddt=ddt_lorentz, noisy=True)
+data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=False)
 
 # # Initialise the ESN
 # crcm = CRCM(dim=dim,
