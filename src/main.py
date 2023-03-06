@@ -27,7 +27,6 @@ import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 
 
 ### Currently unused imports ###
-
 # import h5py
 # import skopt
 # from skopt.space import Real

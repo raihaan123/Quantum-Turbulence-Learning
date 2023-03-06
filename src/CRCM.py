@@ -155,7 +155,7 @@ class CRCM:
             # Save augmented state
             Xa[i] = self.x
 
-        return Xa
+        return Xa       # Equivalent to R (matrix of psi) in the QRCM
 
 
     # @debug

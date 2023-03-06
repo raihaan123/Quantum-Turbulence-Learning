@@ -11,11 +11,9 @@
             "id": "8c8d6cc8692792e3",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
-                "mode": "preview",
-                "source": false
+                "file": "References/QC for NS in ConDi nozzle.pdf"
               }
             }
           },
@@ -28,16 +26,6 @@
                 "file": "Supervisor Meetings/Meeting 4.md",
                 "mode": "source",
                 "source": false
-              }
-            }
-          },
-          {
-            "id": "ba15d226ad6de30e",
-            "type": "leaf",
-            "state": {
-              "type": "image",
-              "state": {
-                "file": "Diagrams/QRCM_circuit.png"
               }
             }
           }
@@ -107,7 +95,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+                "file": "References/QC for NS in ConDi nozzle.pdf",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +112,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+                "file": "References/QC for NS in ConDi nozzle.pdf",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -147,7 +135,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md"
+                "file": "References/QC for NS in ConDi nozzle.pdf"
               }
             }
           },
@@ -191,16 +179,28 @@
   },
   "active": "8c8d6cc8692792e3",
   "lastOpenFiles": [
-    "Supervisor Meetings/Meeting 3.md",
+    "References/QC Literature Review.md",
+    "References/QC Ideas.pdf",
+    "References/Data-centric Heuristics.pdf",
+    "References/Algorithm for NS with SF-w formulation and LBM.pdf",
+    "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
+    "References/QTML Abstracts.pdf",
+    "References/QML with PINNs on 1D Poisson.pdf",
+    "References/QML Literature Review.md",
+    "References/QCFD comparisions.pdf",
+    "References/QC with VQAs for Burgers Equation.pdf",
+    "References/QC with QFT Poisson Solver.pdf",
+    "References/QC prospects for Reactive Turbulence.pdf",
+    "References/QC for NS in ConDi nozzle - supplementary notes.pdf",
     "Diagrams/QRCM_circuit.png",
     "Diagrams/QRCM Forward Pass.png",
-    "Launchpad.md",
     "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+    "Supervisor Meetings/Meeting 3.md",
+    "Launchpad.md",
     "Supervisor Meetings/Meeting 4.md",
     "Theory/Quantum Reservoir Computing Models (QRCMs).md",
     "2023-06-03.md",
     "Theory/Classical Ridge Regression.md",
-    "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
     "Supervisor Meetings/Meeting 1.md"
   ]
 }
