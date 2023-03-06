@@ -27,7 +27,6 @@ def ddt_lorentz(u, params):
         Returns the time derivative of u - specific to the Lorentz system of ODEs.
     """
     beta, rho, sigma    = params
-
     x, y, z             = u
 
     return np.array([sigma*(y-x),
@@ -114,7 +113,7 @@ def solve_ode(N, dt, u0, params=[8/3, 28, 10], ddt=ddt_lorentz):
     return U
 
 
-def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True):
+def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True, override=False):
     """
         Generates data for training, validation and testing.
         Args:
@@ -146,11 +145,13 @@ def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True):
     N_lyap      = int(t_lyap/dt)
 
     # Number of time steps for washout, training, validation and testing
-    N = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2], N_sets[3]]) * N_lyap))
-    N_washout, N_train, N_val, N_test = N
+    if not override:
+        N_sets = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
+
+    N_washout, N_train, N_test = N_sets
 
     # Generate data for training, validation and testing (and washout period)
-    U           = solve_ode(sum(N)*upsample, dt/upsample, u0, ddt=ddt)[::upsample]
+    U           = solve_ode(sum(N_sets)*upsample, dt/upsample, u0, ddt=ddt)[::upsample]
 
     # Compute normalization factor (range component-wise)
     U_data      = U[:N_washout+N_train].copy()      # [:x] means from 0 to x-1 --> ie first x elements
@@ -161,11 +162,8 @@ def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True):
 
     # Washout data
     U_washout   = U[:N_washout].copy()
-    # print(U_washout)
-
-    # Training + Validation data
-    U_train        = U[N_washout       : N_washout+N_train-1].copy() # Inputs
-    Y_train        = U[N_washout+1     : N_washout+N_train  ].copy() # Data to match at next timestep
+    U_train     = U[N_washout       : N_washout+N_train-1].copy() # Inputs
+    Y_train     = U[N_washout+1     : N_washout+N_train  ].copy() # Data to match at next timestep
 
     # Data to be used for testing
     U_test      = U[N_washout+N_train    : N_washout+N_train+N_test-1].copy()
@@ -209,15 +207,15 @@ def generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True):
 
 ### TESTING THE DATA GENERATION ###
 # Data generation parameters
-dim             = 3
-upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
-dt              = 0.005 * upsample      # Time step
-N_sets          = [50, 50, 3, 1000]       # Washout, training, validation, testing
+# dim             = 3
+# upsample        = 2                     # To increase the dt of the ESN wrt the numerical integrator
+# dt              = 0.005 * upsample      # Time step
+# N_sets          = [50, 50, 1000]       # Washout, training, validation, testing
 
-data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True)
+# data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=True)
 
 # # Print data keys and shapes
-# [print(key, value) for key, value in data.items()]
+# [print(key, value.shape) for key, value in data.items()]
 
 # norm [34.93270814 45.44324541 35.74071098]
 # u_mean [-0.53059272 -0.50746428 24.16344666]

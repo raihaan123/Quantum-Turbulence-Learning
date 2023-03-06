@@ -4,7 +4,16 @@ from scipy.sparse import csr_matrix, csc_matrix, lil_matrix
 from scipy.sparse.linalg import eigs
 import time
 
-from decorators import debug
+from decorators import debug, hyperparameters
+
+### Currently unused imports ###
+# import h5py
+# import skopt
+# from skopt.space import Real
+# from skopt.learning import GaussianProcessRegressor as GPR
+# from skopt.learning.gaussian_process.kernels import Matern, WhiteKernel, Product, ConstantKernel
+# from scipy.io import loadmat, savemat
+# from skopt.plots import plot_convergence
 
 
 class CRCM:

@@ -8,7 +8,7 @@ import time
 from tqdm import tqdm
 
 # Local imports
-from decorators import debug
+from decorators import debug, hyperparameters
 
 
 class QRCM:
@@ -33,6 +33,9 @@ class QRCM:
 
 
     def __init__(self, dim=3,
+                       qubits=2,
+                       eps=1e-2,
+                       tik=1e-2,
                        seed=0,
                        plot=False):
         """
@@ -50,7 +53,7 @@ class QRCM:
 
         self.N_in           = dim                               # Number of degrees of freedom of dynamical system
         # n = self.N_qubits   = int(np.ceil(np.log2(dim)))      # Minimum number of qubits required - can be increased for better performance
-        n = self.N_qubits   = 8                                 # ...Override!
+        n = self.N_qubits   = qubits                            # ...Override!
         N   = self.N_dof    = 2**n                              # Number of degrees of freedom of quantum reservoir
         self.qr             = QuantumRegister(n)                # Define the quantum registers in the circuit
         self.qc             = QuantumCircuit(self.qr)           # Note that the qubits are initialized to |0> by default
@@ -63,7 +66,8 @@ class QRCM:
         self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
         self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
 
-        self.eps            = 1e-2                              # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
+        self.eps            = eps                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
+        self.tikhonov       = tik                               # Tikhonov regularization parameter
         self.plot           = plot                              # Plot the circuit if True
 
 
@@ -160,6 +164,7 @@ class QRCM:
 
 
     # @debug
+    @hyperparameters
     def train(self, data):
         """ Train the QRCM
         
@@ -177,14 +182,14 @@ class QRCM:
         U_test    = self.U_test    = data['U_test']
         Y_test    = self.Y_test    = data['Y_test']
         
-        # Select only the first 10 rows of U_train and Y_train
-        samp = 30
-        U_train = U_train[:samp]
-        Y_train = Y_train[:samp]
-        print(f"\nTraining on {samp} rows of U_train and Y_train, with {self.N_qubits} qubits...")
+        # Set samp to number of rows in U_train
+        self.samp = len(U_train)
+        self.ntest = len(U_test)
 
-        print(f"\nBooting QRCM...\n")
-        
+        # Cheeky way to test Wout
+        # U_test = U_train
+        # Y_test = Y_train
+
         # For each row in U_washout, build the circuit and run it - no need to save the output Y
         with tqdm(total=len(U_washout), desc="Washout") as pbar:
             for i, row in enumerate(U_washout):
@@ -217,15 +222,15 @@ class QRCM:
                 self.R[:,i] = self.psi        # Append the output signal to the R matrix
 
         # Calculate the optimal output weight matrix
-        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + 1e-10 * np.eye(self.N_dof))))
+        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tikhonov * np.eye(self.N_dof))))
         
         # Save the output weight matrix to a file - try deserializing it
         np.save("W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
 
-        Y_pred = np.zeros_like(Y_train)
+        Y_pred = np.zeros_like(Y_test)
 
-        with tqdm(total=len(U_train), desc="Testing") as pbar:
-            for i, row in enumerate(U_train):
+        with tqdm(total=len(U_test), desc="Testing") as pbar:
+            for i, row in enumerate(U_test):
                 pbar.update(1)
                 # print(f"\nRow {i+1}/{len(U_test)} : X = {row}")
                 self.X = row
@@ -233,20 +238,20 @@ class QRCM:
                 Y_pred[i] = np.dot(self.W_out, self.psi)         # Multiply psi by W_out to get the output signal
 
         # Calculate the absolute error for each timestep - for each N_in on a new line plot
-        self.err_ts = np.abs(Y_train - Y_pred)
-        
+        self.err_ts = np.abs(Y_test - Y_pred)
+
         # Plot the error time series for all N_in dimensions
-        # plt.figure()
+        plt.figure()
         
-        # for i in range(self.N_in):
-        #     plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
-        # plt.title("Absolute Error Time Series")
-        # plt.legend()
-        # plt.xlabel("Time Step")
-        # plt.ylabel("Absolute Error")
-        # plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
-        # plt.show()
+        for i in range(self.N_in):
+            plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
+        plt.title("Absolute Error Time Series")
+        plt.legend()
+        plt.xlabel("Time Step")
+        plt.ylabel("Absolute Error")
+        plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
+        plt.show()
         
         # Find MSE
-        print(f"\nMSE for each dimension: {np.mean(self.err_ts**2, axis=0)}")
-        print(f"\nTotal MSE: {np.mean(self.err_ts**2)}")
+        self.MSE = np.mean(self.err_ts**2)
+        # print(f"\nMSE for each dimension: {np.mean(self.err_ts**2, axis=0)}")
