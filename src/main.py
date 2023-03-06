@@ -18,14 +18,13 @@ sweep_config = {
         'goal'  : 'minimize'
     },
     'parameters'    : {
-        'qubits'    : {'values': range(2,8)},
-        'epsilon'   : {'min': 0, 'max': 1},
+        'qubits'    : {'values': [2, 4, 6]},
+        'epsilon'   : {'min': 0.0, 'max': 1.0},
         'tikhonov'  : {'min': 1e-10, 'max': 1e-2},
         'N_train'   : {'values': [50, 100, 300, 500, 1000, 2000]},
         'N_test'    : {'values': [50, 100, 300, 500, 1000, 2000]},
     }
 }
-
 
 sweep_id = wandb.sweep(sweep_config, project="Quantum Turbulence Learning", entity="raihaan123")
 
@@ -54,9 +53,12 @@ def train():
 
         # Train the QRCM with the training data
         qrcm.train(data)
-        
-        # Log MSE to WandB
+
+        # Log data to WandB - can generate plots from this
+        wandb.log({'Error Time Series': qrcm.err_ts})
         wandb.log({'MSE': qrcm.MSE})
+        wandb.log({'MSE_full': qrcm.MSE_full})      # Log the MSE for each component
+        wandb.log({'Time': qrcm.time})              # Log the time taken to train the model
 
 
 

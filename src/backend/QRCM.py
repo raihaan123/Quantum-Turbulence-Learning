@@ -249,4 +249,4 @@ class QRCM:
         
         # Find MSE
         self.MSE = np.mean(self.err_ts**2)
-        # print(f"\nMSE for each dimension: {np.mean(self.err_ts**2, axis=0)}")
+        self.MSE_full = np.mean(self.err_ts**2, axis=0)
