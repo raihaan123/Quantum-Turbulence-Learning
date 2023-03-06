@@ -1,14 +1,13 @@
-from backend.ode import generate_data, ddt_lorentz, ddt_MFE
-from backend.CRCM import CRCM
-from backend.QRCM import QRCM
+from backend.solver import Lorentz, MFE
+from backend import CRCM, QRCM
+
 import numpy as np
 import wandb
-
 import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 
 
 # Set up WandB
-wandb.login()
+# wandb.login()
 
 sweep_config = {
     'method'    : 'bayes',
@@ -26,7 +25,7 @@ sweep_config = {
     }
 }
 
-sweep_id = wandb.sweep(sweep_config, project="Quantum Turbulence Learning", entity="raihaan123")
+# sweep_id = wandb.sweep(sweep_config, project="Quantum Turbulence Learning", entity="raihaan123")
 
 # Data generation parameters
 dim             = 3
@@ -63,9 +62,21 @@ def train():
 
 
 # Number of runs to execute
-count = 100
-wandb.agent(sweep_id, function=train, count=count)
+# count = 100
+# wandb.agent(sweep_id, function=train, count=count)
 
+
+# Data generation parameters
+params          = [8/3, 28, 10]
+dt              = 0.005
+N_sets          = [50, 50, 1000]       # Washout, training, testing
+
+
+l3 = Lorentz(params, dt, N_sets)
+l3.generate()
+
+# Print data keys and shapes
+[print(key, value.shape) for key, value in l3.data.items()]
 
 # # Initialise the ESN
 # crcm = CRCM(dim=dim,
