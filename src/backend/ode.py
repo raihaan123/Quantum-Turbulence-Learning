@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 # Local imports
-from decorators import debug
+from tools.decorators import debug
 
 # Configure matplotlib for dark background and latex fonts
 plt.style.use('dark_background')

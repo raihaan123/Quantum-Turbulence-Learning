@@ -4,7 +4,7 @@ from scipy.sparse import csr_matrix, csc_matrix, lil_matrix
 from scipy.sparse.linalg import eigs
 import time
 
-from decorators import debug, hyperparameters
+from tools.decorators import debug, hyperparameters
 
 ### Currently unused imports ###
 # import h5py

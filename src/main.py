@@ -1,6 +1,6 @@
-from ode import generate_data, ddt_lorentz, ddt_MFE
-from CRCM import CRCM
-from QRCM import QRCM
+from backend.ode import generate_data, ddt_lorentz, ddt_MFE
+from backend.CRCM import CRCM
+from backend.QRCM import QRCM
 import numpy as np
 import wandb
 

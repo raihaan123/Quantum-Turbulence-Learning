@@ -8,7 +8,7 @@ import time
 from tqdm import tqdm
 
 # Local imports
-from decorators import debug, hyperparameters
+from tools.decorators import debug, hyperparameters
 
 
 class QRCM:
