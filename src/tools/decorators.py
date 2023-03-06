@@ -26,8 +26,6 @@ def debug(func):
 
     return wrapper
 
-# print(debug.__doc__)
-
 
 def hyperparameters(func):
     """
@@ -48,6 +46,7 @@ def hyperparameters(func):
         print(f"Using n = {args[0].N_qubits} qubits and epsilon = {args[0].eps}")        
         print(f"\nTraining MSE: {args[0].MSE}")
         print(f"Time taken: {end_time-start_time}")
+        args[0].time = end_time-start_time
         
         # Log the hyperparameters to a file
         with open("log/log.txt", "a") as f:

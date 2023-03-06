@@ -1,10 +1,7 @@
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
-from qiskit.quantum_info import Statevector
-from qiskit.visualization import plot_histogram
+from qiskit import QuantumCircuit, QuantumRegister, execute, Aer
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import pi
-import time
 from tqdm import tqdm
 
 # Local imports
@@ -69,9 +66,9 @@ class QRCM:
         self.eps            = eps                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.tikhonov       = tik                               # Tikhonov regularization parameter
         self.plot           = plot                              # Plot the circuit if True
+        self.time           = None                              # Time taken to complete the simulation - set by the decorator
 
 
-    # @debug
     def add_U(self, theta):
         """ Applies a block U(theta) to the quantum circuit
         
@@ -138,7 +135,6 @@ class QRCM:
         if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
 
-    # @debug
     def open_loop(self):
         """ Run the QRCM in open-loop mode
         
@@ -163,7 +159,6 @@ class QRCM:
         assert np.isclose(np.sum(self.P), 1), "Probability vector is not valid!"    # Assert that the probability vector is valid
 
 
-    # @debug
     @hyperparameters
     def train(self, data):
         """ Train the QRCM
@@ -241,16 +236,16 @@ class QRCM:
         self.err_ts = np.abs(Y_test - Y_pred)
 
         # Plot the error time series for all N_in dimensions
-        plt.figure()
+        # plt.figure()
         
-        for i in range(self.N_in):
-            plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
-        plt.title("Absolute Error Time Series")
-        plt.legend()
-        plt.xlabel("Time Step")
-        plt.ylabel("Absolute Error")
-        plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
-        plt.show()
+        # for i in range(self.N_in):
+        #     plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
+        # plt.title("Absolute Error Time Series")
+        # plt.legend()
+        # plt.xlabel("Time Step")
+        # plt.ylabel("Absolute Error")
+        # plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
+        # plt.show()
         
         # Find MSE
         self.MSE = np.mean(self.err_ts**2)

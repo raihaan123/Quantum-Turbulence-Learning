@@ -7,60 +7,62 @@ import wandb
 import os;  os.environ["OMP_NUM_THREADS"] = '32' # Imposes cores
 
 
-# # Set up WandB
-# wandb.login()
-# wandb.init(project="Quantum Turbulence Learning")
+# Set up WandB
+wandb.login()
 
-# sweep_config = {
-#     'method': 'bayes',
-#     'name': 'QRCM sweep',
-#     'metric': {
-#         'name': 'MSE',
-#         'goal': 'minimize'
-#         },
-#     'parameters': {
-#         'qubits': {'values': [2:8]},
-#         'epsilon': {'min': 0, 'max': 1},
-#         'tikhonov': {'min': 1e-10, 'max': 1e-2},
-        
-#     }
-# }
+sweep_config = {
+    'method'    : 'bayes',
+    'name'      : 'QRCM sweep',
+    'metric'    : {
+        'name'  : 'MSE',
+        'goal'  : 'minimize'
+    },
+    'parameters'    : {
+        'qubits'    : {'values': range(2,8)},
+        'epsilon'   : {'min': 0, 'max': 1},
+        'tikhonov'  : {'min': 1e-10, 'max': 1e-2},
+        'N_train'   : {'values': [50, 100, 300, 500, 1000, 2000]},
+        'N_test'    : {'values': [50, 100, 300, 500, 1000, 2000]},
+    }
+}
 
+
+sweep_id = wandb.sweep(sweep_config, project="Quantum Turbulence Learning", entity="raihaan123")
 
 # Data generation parameters
 dim             = 3
 upsample        = 1                     # To increase the dt of the ESN wrt the numerical integrator
 dt              = 0.005 * upsample      # Time step
 
-# Define N for washout, training, validation and testing
-N_washout       = 50
-N_train         = 100
-N_test          = 200
-N_sets          = [N_washout, N_train, N_test]
+def train():
+    with wandb.init() as run:
+        config = wandb.config
 
-# Solve the ODE system using generate_data() from ode.py
-data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=False, override=True)
+        # Define N for washout, training, validation and testing
+        N_washout       = 50
+        N_train         = config['N_train']
+        N_test          = config['N_test']
+        N_sets          = [N_washout, N_train, N_test]
 
-# Initialise the QRCM
-qrcm = QRCM(qubits=4,
-            eps=0.05,
-            tik=1e-6)
+        # Solve the ODE system using generate_data() from ode.py
+        data = generate_data(dim, N_sets, upsample, dt, ddt=ddt_lorentz, noisy=False, override=True)
 
-# Train the QRCM with the training data
-qrcm.train(data)
+        # Initialise the QRCM
+        qrcm = QRCM(qubits  = config['qubits'],
+                    eps     = config['epsilon'],
+                    tik     = config['tikhonov'],)
 
-
-
-
-
-
-
-
-
+        # Train the QRCM with the training data
+        qrcm.train(data)
+        
+        # Log MSE to WandB
+        wandb.log({'MSE': qrcm.MSE})
 
 
 
-
+# Number of runs to execute
+count = 100 
+wandb.agent(sweep_id, function=train, count=count)
 
 
 # # Initialise the ESN

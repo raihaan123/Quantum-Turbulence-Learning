@@ -11,9 +11,9 @@
             "id": "8c8d6cc8692792e3",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "image",
               "state": {
-                "file": "References/QC for NS in ConDi nozzle.pdf"
+                "file": "Diagrams/QRCM Forward Pass.png"
               }
             }
           },
@@ -95,7 +95,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "References/QC for NS in ConDi nozzle.pdf",
+                "file": "Diagrams/QRCM Forward Pass.png",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -112,7 +112,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "References/QC for NS in ConDi nozzle.pdf",
+                "file": "Diagrams/QRCM Forward Pass.png",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -135,7 +135,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "References/QC for NS in ConDi nozzle.pdf"
+                "file": "Diagrams/QRCM Forward Pass.png"
               }
             }
           },
@@ -179,6 +179,8 @@
   },
   "active": "8c8d6cc8692792e3",
   "lastOpenFiles": [
+    "Diagrams/QRCM Forward Pass.png.crswap",
+    "References/QC for NS in ConDi nozzle.pdf",
     "References/QC Literature Review.md",
     "References/QC Ideas.pdf",
     "References/Data-centric Heuristics.pdf",
@@ -191,7 +193,6 @@
     "References/QC with VQAs for Burgers Equation.pdf",
     "References/QC with QFT Poisson Solver.pdf",
     "References/QC prospects for Reactive Turbulence.pdf",
-    "References/QC for NS in ConDi nozzle - supplementary notes.pdf",
     "Diagrams/QRCM_circuit.png",
     "Diagrams/QRCM Forward Pass.png",
     "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
