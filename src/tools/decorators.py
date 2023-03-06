@@ -49,8 +49,8 @@ def hyperparameters(func):
         args[0].time = end_time-start_time
         
         # Log the hyperparameters to a file
-        with open("log/log.txt", "a") as f:
-            f.write(f"sam={args[0].samp}/{args[0].ntest}, n={args[0].N_qubits}, eps={args[0].eps}, mse={args[0].MSE}, t={end_time-start_time}\n")
+        # with open("log/log.txt", "a") as f:
+        #     f.write(f"sam={args[0].samp}/{args[0].ntest}, n={args[0].N_qubits}, eps={args[0].eps}, mse={args[0].MSE}, t={end_time-start_time}\n")
         
         return result
 
