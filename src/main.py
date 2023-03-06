@@ -22,7 +22,7 @@ sweep_config = {
         'epsilon'   : {'min': 0.0, 'max': 1.0},
         'tikhonov'  : {'min': 1e-10, 'max': 1e-2},
         'N_train'   : {'values': [50, 100, 300, 500, 1000, 2000]},
-        'N_test'    : {'values': [50, 100, 300, 500, 1000, 2000]},
+        'N_test'    : {'values': [50, 100, 300, 500, 1000, 2000]}
     }
 }
 
@@ -63,7 +63,7 @@ def train():
 
 
 # Number of runs to execute
-count = 100 
+count = 100
 wandb.agent(sweep_id, function=train, count=count)
 
 

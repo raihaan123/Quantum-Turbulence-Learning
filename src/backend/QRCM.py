@@ -220,7 +220,7 @@ class QRCM:
         self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tikhonov * np.eye(self.N_dof))))
         
         # Save the output weight matrix to a file - try deserializing it
-        np.save("log/W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
+        # np.save("log/W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
 
         Y_pred = np.zeros_like(Y_test)
 
