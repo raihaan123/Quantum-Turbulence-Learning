@@ -42,7 +42,7 @@ def hyperparameters(func):
         result = func(*args, **kwargs)
         end_time = time.time()
 
-        print(f"\nTrain/test with {args[0].solver.N_train}/{args[0].solver.N_test} samples")      # This is a bit hacky
+        print(f"\nTrain/test with {args[0].solver.N_sets[1]}/{args[0].solver.N_sets[2]} samples")      # This is a bit hacky
         print(f"Using n = {args[0].N_qubits} qubits and epsilon = {args[0].eps}")
         print(f"\nTraining MSE: {args[0].MSE}")
         print(f"Time taken: {end_time-start_time}")
@@ -50,7 +50,7 @@ def hyperparameters(func):
 
         # Log the hyperparameters to a file
         with open("log/log.txt", "a") as f:
-            f.write(f"sam={args[0].solver.N_train}/{args[0].solver.N_test}, n={args[0].N_qubits}, eps={args[0].eps}, mse={args[0].MSE}, t={end_time-start_time}\n")
+            f.write(f"sam={args[0].solver.N_sets[1]}/{args[0].solver.N_sets[2]}, n={args[0].N_qubits}, eps={args[0].eps}, mse={args[0].MSE}, t={end_time-start_time}\n")
 
         return result
 
