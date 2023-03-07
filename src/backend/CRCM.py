@@ -37,7 +37,7 @@ class CRCM:
 
     """
 
-    def __init__(self, dim=3,
+    def __init__(self, solver=None,
                        N_units=200,
                        connectivity=3,
                        seed=0):
@@ -248,3 +248,23 @@ class CRCM:
         Wout = np.linalg.solve(LHS, RHS)
 
         return Wout
+
+
+# # Test the ESN with the test data
+# U_washout   = data['U_washout']
+# U_test      = data['U_test']
+# Y_test      = data['Y_test']
+
+# xf = crcm.open_loop(U_washout, np.zeros(200))[-1,: 200]
+# Y_pred = crcm.open_loop(U_test, xf)
+
+# # Plot the error time series for each component
+# eror_ts = np.abs(Y_test - Y_pred)
+
+# for i in range(dim):
+#     plt.plot(err_ts[:,i], label=f"Dimension {i+1}")
+# plt.title("Absolute Error Time Series")
+# plt.legend()
+# plt.xlabel("Time Step")
+# plt.ylabel("Absolute Error")
+# plt.show()
