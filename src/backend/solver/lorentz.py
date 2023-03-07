@@ -1,11 +1,12 @@
-from .ode import Solver
-
 import numpy as np
+
+# Local imports
+from .ode import Solver
 
 
 class Lorentz(Solver):
     """ Lorentz system solver class
-    
+
     """
 
     def __init__(self, params, dt, N_sets, upsample=1, seed=0):

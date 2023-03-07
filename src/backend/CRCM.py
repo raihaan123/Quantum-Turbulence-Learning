@@ -18,12 +18,13 @@ from tools.decorators import debug, hyperparameters
 
 class CRCM:
     """ Class for the CRCM - Classical Reservoir Computing Model
+    Heavily adapted from Alberto Racca's implementation: https://www.sciencedirect.com/science/article/pii/S0893608021001969
 
     Attributes:
         N_units: number of reservoir units
         N_in: number of input units
         N_out: number of output units
-        
+
         Win: input weights
         W: reservoir weights
         Wout: output weights
@@ -53,12 +54,12 @@ class CRCM:
     # @debug
     def generate_weights(self):
         """ Generates the input weights and reservoir weights (Win and W)
-        
+
         Args (self):
             N_units: number of reservoir units
             dim: dimension of the ODE system
             rnd: random number generator
-            
+
         Saves:
             Win: input weights
             W: reservoir weights
@@ -93,7 +94,7 @@ class CRCM:
         W *= 1/self.rho
 
 
-    
+
     # @debug
     def optimize(self):
         None
@@ -122,7 +123,7 @@ class CRCM:
         u_augmented = np.hstack(((u-self.u_mean)/self.norm, self.bias_in))
 
         # Reservoir update - accessing the current reservoir state from the class attribute
-        x_post      = np.tanh(self.Win.dot(u_augmented*sigma_in) + self.W.dot(rho*self.x))   
+        x_post      = np.tanh(self.Win.dot(u_augmented*sigma_in) + self.W.dot(rho*self.x))
 
         # Output bias added and state saved
         self.x      = np.concatenate((x_post, self.bias_out))
@@ -210,7 +211,7 @@ class CRCM:
         # Washout phase
         # [-1,:x] indexes the last row of the first x columns
         xf    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,: self.N_units]
-        
+
         # LHS and RHS are the left and right hand sides of the equation Wout = LHS \ RHS
         LHS   = 0
         RHS   = 0
@@ -239,7 +240,7 @@ class CRCM:
 
         if N_splits > 1:# to cover the last part of the data that didn't make into the even splits
             Xa1 = self.open_loop(U_train[(ii+1)*N_len:], xf)[1:]
-            LHS += np.dot(Xa1.T, Xa1) 
+            LHS += np.dot(Xa1.T, Xa1)
             RHS += np.dot(Xa1.T, Y_train[(ii+1)*N_len:])
 
         LHS.ravel()[::LHS.shape[1]+1] += tikh

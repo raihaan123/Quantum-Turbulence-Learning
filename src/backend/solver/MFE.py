@@ -1,8 +1,12 @@
+import numpy as np
+
+# Local imports
 from .ode import Solver
+
 
 class MFE(Solver):
     """ MFE system solver class
-    
+
     """
 
     def __init__(self, params, dt, N_sets, upsample=1, seed=0):
