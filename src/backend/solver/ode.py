@@ -41,9 +41,15 @@ class Solver:
         self.rnd        = np.random.RandomState(seed)
 
         self.dim        = 0
-        self.u0         = []
         self.u          = []
-        self.data       = {}
+
+        # Data containers
+        self.U          = {"Washout": [],
+                           "Train"  : [],
+                           "Test"   : []}
+
+        self.Y          = {"Train"  : [],
+                           "Test"   : []}
 
 
     def ddt(self):
@@ -82,11 +88,11 @@ class Solver:
             Generates data for training, validation and testing.
 
             Returns:
-                U_washout: washout data
-                U_train: training data
-                Y_train: training data to match at next timestep
-                U_test: test data
-                Y_test: test data to match at next timestep
+                U_washout: washout input
+                U_train: training input
+                Y_train: training output to match at next timestep
+                U_test: test input
+                Y_test: test output to match at next timestep
                 norm: normalisation factor
                 u_mean: mean of training data
         """
@@ -117,20 +123,20 @@ class Solver:
         self.RK4(sum(N_sets))
 
         # Compute normalization factor (range component-wise)
-        U_data      = self.u[:N_washout+N_train].copy()     # [:x] means from 0 to x-1 --> ie first x elements
-        m           = U_data.min(axis=0)                    # axis=0 means along columns
+        U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
+        m           = U_data.min(axis=0)            # axis=0 means along columns
         M           = U_data.max(axis=0)
         self.norm   = M-m
         self.u_mean = U_data.mean(axis=0)
 
-        # Washout data
-        self.U_washout    = self.u[:N_washout].copy()
-        self.U_train      = self.u[N_washout    : N_washout+N_train-1].copy() # Inputs
-        self.Y_train      = self.u[N_washout+1  : N_washout+N_train  ].copy() # Data to match at next timestep
+        # Saving data
+        self.U["Washout"] = self.u[:N_washout]
+        self.U["Train"]   = self.u[N_washout    : N_washout+N_train-1]      # Inputs
+        self.Y["Train"]   = self.u[N_washout+1  : N_washout+N_train  ]      # Data to match at next timestep
 
         # Testing data
-        self.U_test   = self.u[N_washout+N_train    : N_washout+N_train+N_test-1].copy()
-        self.Y_test   = self.u[N_washout+N_train+1  : N_washout+N_train+N_test  ].copy()
+        self.U["Test"] = self.u[N_washout+N_train    : N_washout+N_train+N_test-1]
+        self.Y["Test"] = self.u[N_washout+N_train+1  : N_washout+N_train+N_test  ]
 
         # Adding noise to training set inputs with sigma_n the noise of the data
         # improves performance and regularizes the error as a function of the hyperparameters
@@ -139,7 +145,7 @@ class Solver:
             data_std = np.std(self.u, axis=0)
             sigma_n = 1e-6     # Controls noise in training inputs (up to 1e-1)
             for i in range(self.dim):
-                self.U_train[:,i] = self.U_train[:,i] \
+                self.U["Train"][:,i] = self.U["Train"][:,i] \
                                 + self.rnd.normal(0, sigma_n*data_std[i], N_train-1)
 
 
@@ -147,12 +153,12 @@ class Solver:
         """ Plots data """
 
         # Plotting part of training data to visualize noise
-        plt.plot(self.U_train[:N_val,0], c='w', label='Non-noisy')
-        plt.plot(self.U_train[:N_val], c='w')
+        plt.plot(self.U["Train"][:N_val,0], c='w', label='Non-noisy')
+        plt.plot(self.U["Train"][:N_val], c='w')
 
         if self.noisy:
-            plt.plot(self.U_train[:N_val,0], 'r--', label='Noisy')
-            plt.plot(self.U_train[:N_val], 'r--')
+            plt.plot(self.U["Train"][:N_val,0], 'r--', label='Noisy')
+            plt.plot(self.U["Train"][:N_val], 'r--')
 
         plt.legend()
         plt.show()

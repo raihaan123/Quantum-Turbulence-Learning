@@ -57,37 +57,35 @@ class CRCM:
         self.seed           = seed
         rnd = self.rnd      = np.random.RandomState(seed)
 
-        # Seting up the ESN with random Win and W
-        Win = self.Win = lil_matrix((N_units, dim+1))      # Sparse syntax for the input matrix, with +1 for bias input
+        # Seting up the ESN with random Win
+        self.Win = lil_matrix((N_units, dim+1))      # Sparse syntax for the input matrix, with +1 for bias input
 
         # Apply a random number in [-1, 1) to a randomn column in each row in Win
         for i in range(N_units):
-            Win[i, rnd.randint(0, dim+1)] = rnd.uniform(-1, 1)
+            self.Win[i, rnd.randint(0, dim+1)] = rnd.uniform(-1, 1)
 
         # Convert to CSR format for faster matrix-vector multiplication
         Win = Win.tocsr()
 
         # On average only connectivity elements different from zero
-        W = self.W = csr_matrix(rnd.uniform(-1, 1, (N_units, N_units)) * (rnd.rand(N_units, N_units) < (1-self.sparseness)))
+        self.W = csr_matrix(rnd.uniform(-1, 1, (N_units, N_units)) * (rnd.rand(N_units, N_units) < (1-self.sparseness)))
 
         # The spectral radius of W is the maximum absolute value of its eigenvalues
-        self.rho = np.abs(eigs(W, k=1, which='LM', return_eigenvectors=False))[0]
+        self.rho = np.abs(eigs(self.W, k=1, which='LM', return_eigenvectors=False))[0]
 
         # Rescale W to have a spectral radius of 1
-        W *= 1/self.rho
+        self.W *= 1/self.rho
 
 
     def step(self):
         """ Advances one ESN time step
 
             Args (self):
-                x_pre: reservoir state
+                psi: reservoir state
                 u: input
-                sigma_in: input scaling
-                rho: spectral radius
 
             Saves:
-                x: new reservoir state
+                psi: new reservoir state
         """
 
         # Load class attributes
@@ -99,13 +97,12 @@ class CRCM:
         u_augmented = np.hstack(((u-self.u_mean)/self.norm, self.bias_in))
 
         # Reservoir update - accessing the current reservoir state from the class attribute
-        x_post      = np.tanh(self.Win.dot(u_augmented*sigma_in) + self.W.dot(rho*self.x))
+        psi         = np.tanh(self.Win.dot(u_augmented*sigma_in) + self.W.dot(rho*self.psi))
 
         # Output bias added and state saved
-        self.x      = np.concatenate((x_post, self.bias_out))
+        self.psi    = np.concatenate((psi, self.bias_out))
 
 
-    # @debug
     def open_loop(self, ts):
         """ Advances ESN in open-loop.
 
@@ -114,19 +111,19 @@ class CRCM:
         """
 
         # Output bias
-        bias_out    = np.array([1.])
+        self.bias_out   = np.array([1.])
 
-        x = self.x  = np.empty((ts+1, self.N_units+1))
-        x[0]        = np.concatenate((x0, bias_out))
+        x   = self.x    = np.empty((ts+1, self.N_units+1))
+        x[0]            = np.concatenate((x0, self.bias_out))
 
         # Setting initial reservoir state
-        self.x = Xa[0, :self.N_units]
+        self.psi = Xa[0, :self.N_units]
 
         # Iterate over time steps
         for i in np.arange(1, ts+1):
 
-            self.bias_in    = np.array([np.mean(np.abs((u-self.u_mean)/self.norm))])
-            self.step()                                                                         # Advance one time step
+            self.bias_in = np.array([np.mean(np.abs((u-self.u_mean)/self.norm))])
+            self.step()    # Advance one time step
 
 
     def train(self):
@@ -157,8 +154,8 @@ class CRCM:
         self.bias_out = np.array([1.])
 
         # Washout phase
-        # [-1,:x] indexes the last row of the first x columns
-        self.x    = self.open_loop(U_washout, np.zeros(self.N_units))[-1,: self.N_units]
+        self.psi = np.zeros(self.N_units)
+        self.open_loop(N_splits[0])
 
         # LHS and RHS are the left and right hand sides of the equation Wout = LHS \ RHS
         LHS   = 0

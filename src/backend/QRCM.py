@@ -69,6 +69,8 @@ class QRCM:
         self.plot           = plot                              # Plot the circuit if True
         self.time           = None                              # Time taken to complete the simulation - set by @hyperparameters decorator
 
+        self.backend = Aer.get_backend('statevector_simulator') # Aer statevector simulator
+
 
     def add_U(self, theta):
         """ Applies a block U(theta) to the quantum circuit
@@ -104,68 +106,52 @@ class QRCM:
             if j == n-1:  self.qc.barrier()
 
 
-    def build_circuit(self):
-        """
-        Build the quantum circuit!
-
-        Args:
-            None
+    def open_loop(self, key, save=False):
+        """ Build and run the quantum circuit! Open-loop mode, so no state feedback.
 
         Saves:
             self.qc (QuantumCircuit): Quantum circuit object
-
         """
 
-        # Delete the previous circuit - ie remove all gates
-        self.qc.data = []
+        # Add a status bar to the termainal - tqdm is a progress bar library
+        with tqdm(total=self.solver.U[key].shape[0], desc=key) as pbar:
+            for i, row in enumerate(self.solver.U[key]):
+                pbar.update(1)
 
-        # Loading the reservoir state parameters
-        P = self.P
-        X = self.X
-        b = self.beta
+                # Reset the previous circuit - ie remove all gates
+                self.qc.data = []
 
-        # Add the unitary transformations to the circuit separated by barriers
-        # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.add_U(4 * pi * P)
-        self.qc.barrier()
-        self.add_U(4 * pi * X)
-        self.qc.barrier()
-        self.add_U(b)
+                # Loading the reservoir state parameters
+                P = self.P
+                X = self.X  = row
+                b = self.beta
 
-        # Plot the circuit using the built-in plot function
-        if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
+                # Add the unitary transformations to the circuit separated by barriers
+                # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
+                self.add_U(4 * pi * P)
+                self.qc.barrier()
+                self.add_U(4 * pi * X)
+                self.qc.barrier()
+                self.add_U(b)
 
+                # Plot the circuit using the built-in plot function
+                if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
-    def open_loop(self):
-        """ Run the QRCM in open-loop mode
+                # Run the circuit - save probability vector using statevector_simulator
+                psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
+                P_tilde = self.P_tilde  = np.abs(psi)**2
 
-        Args:
-            shots (int): Number of shots to run the circuit for
+                # Solve for the final probability vector P^(t+1)
+                P = self.eps * P_tilde + (1-self.eps) * P
+                assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
 
-        Returns:
-            self.psi (np.ndarray): Evolved probability vector
-            self.P_tilde (np.ndarray): Final probability vector
-            self.P (np.ndarray): Updated probability vector
-            self.Y (np.ndarray): Output signal
-        """
-
-        # Build the circuit
-        self.build_circuit()
-
-        # Run the circuit - save probability vector using statevector_simulator
-        self.psi = np.abs(execute(self.qc, Aer.get_backend('statevector_simulator')).result().get_statevector())
-        self.P_tilde = np.abs(self.psi)**2
-
-        self.P = self.eps * self.P_tilde + (1-self.eps) * self.P                    # Solve for the final probability vector P^(t+1)
-        assert np.isclose(np.sum(self.P), 1), "Probability vector is not valid!"    # Assert that the probability vector is valid
+                # Appending state to the reservoir state matrix during training
+                if save:    self.R[:,i] = psi
 
 
     @hyperparameters
     def train(self, override=False):
         """ Train the QRCM
-
-        Args:
-            data (dict): Dictionary containing the training data
 
         Saves:
             self.W_out (np.ndarray): Output weight matrix (optimized via ridge regression)
@@ -175,57 +161,41 @@ class QRCM:
         self.solver.generate(override)
 
         # Load data
-        U_washout = self.solver.U_washout
-        U_train   = self.solver.U_train
-        Y_train   = self.solver.Y_train
-        U_test    = self.solver.U_test
-        Y_test    = self.solver.Y_test
+        U_washout = self.solver.U["Washout"]
+        U_train   = self.solver.U["Train"]
+        Y_train   = self.solver.Y["Train"]
+        U_test    = self.solver.U["Test"]
+        Y_test    = self.solver.Y["Test"]
 
         # Cheeky way to test if Wout optimization works
         # U_test = U_train
         # Y_test = Y_train
 
-        # Add a status bar to the termainal - tqdm is a progress bar library
-        with tqdm(total=len(U_washout), desc="Washout") as pbar:
-            for i, row in enumerate(U_washout):
-                pbar.update(1)
-                self.X = row
-                self.open_loop()
+        # Washout the reservoir
+        self.open_loop("Washout")
 
         # Plot the latest circuit
         # self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
         # Target output matrix
-        self.U_tg = Y_train.T                               # Dimensions [N_in x N_train]
-        self.R = np.zeros((self.N_dof, len(U_train)))       # Dimensions [N_dof x N_train]
+        self.U_tg = Y_train.T                           # Dimensions [N_in x N_train]
+        self.R = np.zeros((self.N_dof, len(U_train)))   # Dimensions [N_dof x N_train]
 
         # For each row in U_train, build and run the circuit - save the reservoir state |psi^(t+1)> in R
-        with tqdm(total=len(U_train), desc="Training") as pbar:
-            for i, row in enumerate(U_train):
-                pbar.update(1)
-                self.X = row
-                self.open_loop()
-
-                # Append the statevector to R
-                self.R[:,i] = self.psi
+        self.open_loop("Train", save=True)
 
         # Calculate the optimal output weight matrix -> W_out = U_tg * R^T (RR^T + beta*I)^-1. Dimensions [N_in x N_dof]
         self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tikhonov * np.eye(self.N_dof))))
 
         # Save the output weight matrix to a file - try deserializing it
-        np.save("log/W_out.npy", self.W_out)        # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
+        np.save("log/W_out.npy", self.W_out)            # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
 
-        Y_pred = np.zeros_like(Y_test)
-
-        with tqdm(total=len(U_test), desc="Testing") as pbar:
-            for i, row in enumerate(U_test):
-                pbar.update(1)
-                self.X = row
-                self.open_loop()
-                Y_pred[i] = np.dot(self.W_out, self.psi)         # Multiply |psi^(t+1)> by W_out to get the output signal
+        self.R = np.zeros((self.N_dof, len(U_test)))    # Reset reservoir state matrix
+        self.open_loop("Test", save=True)
+        Y_pred = np.dot(self.W_out, self.R)           # Multiply R^T by W_out to get all the output signals
 
         # Calculate the absolute error for each timestep - for each N_in on a new line plot
-        self.err_ts = np.abs(Y_test - Y_pred)
+        self.err_ts = np.abs(Y_test - Y_pred.T)
 
         # Plot the error time series for all N_in dimensions
         # plt.figure()
@@ -236,7 +206,7 @@ class QRCM:
         # plt.legend()
         # plt.xlabel("Time Step")
         # plt.ylabel("Absolute Error")
-        # plt.ylim(0, 1.1 * np.max(self.err_ts))      # make sure the data covers 70% of the plot height
+        # plt.ylim(0, 1.1 * np.max(self.err_ts))        # make sure the data covers 70% of the plot height
         # plt.show()
 
         # Find MSE
