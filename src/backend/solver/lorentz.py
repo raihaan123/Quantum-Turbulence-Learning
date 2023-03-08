@@ -10,7 +10,7 @@ class Lorentz(Solver):
     """
 
     def __init__(self, params, dt, N_sets, upsample=1, seed=0):
-        super().__init__(params, dt, N_sets, upsample=1, seed=0)
+        super().__init__(params, dt, N_sets, upsample, seed)
 
         self.dim = 3
 

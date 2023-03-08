@@ -6,9 +6,10 @@ from tqdm import tqdm
 
 # Local imports
 from tools.decorators import debug, hyperparameters
+from .RCM import RCM
 
 
-class QRCM:
+class QRCM(RCM):
     """ Class for the QRCM - Quantum Reservoir Computing Model
 
     My implementation based on "Hybrid quantum-classical reservoir computing of thermal convection flow": https://ar5iv.labs.arxiv.org/html/2204.13951
@@ -28,13 +29,12 @@ class QRCM:
         - train(): Train the QRCM.
     """
 
-
-    def __init__(self, solver=None,
-                       qubits=2,
-                       eps=1e-2,
-                       tik=1e-2,
-                       seed=0,
-                       plot=False):
+    def __init__(self,  solver=None,
+                        qubits=2,
+                        eps=1e-2,
+                        tik=1e-2,
+                        seed=0,
+                        plot=False):
         """
         Initialize the QRCM.
 
@@ -46,28 +46,18 @@ class QRCM:
         -	Final probability vector P^(t+1): This is a vector of dimension N_dof, representing the final probability vector after the linear combination of the evolved probability vector and the previous probability vector has been performed using the leaking rate epsilon
         """
 
-        ### Defining attributes of the QRCM ###
-        self.solver         = solver                            # Solver object - contains the dynamical system and the input data
-        self.N_in           = solver.dim                        # Number of degrees of freedom of dynamical system
+        super().__init__(solver, eps, tik, seed, plot)
 
+        ### Defining attributes of the QRCM ###
         n  = self.N_qubits  = qubits                            # int(np.ceil(np.log2(dim))) for minimum number of qubits required
         N  = self.N_dof     = 2**n                              # Number of degrees of freedom of quantum reservoir
 
         self.qr             = QuantumRegister(n)                # Define the quantum registers in the circuit
         self.qc             = QuantumCircuit(self.qr)           # Note that the qubits are initialized to |0> by default
 
-        self.seed           = seed                              # Set the seed for the random number generator
-        self.rnd            = np.random.RandomState(seed)       # Random state object
-
         self.psi            = np.zeros((N))                     # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
-        self.X              = np.zeros((solver.dim))            # X^t is the latest input signal - this is a vector of dimension N_in
         self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
         self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
-
-        self.eps            = eps                               # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
-        self.tikhonov       = tik                               # Tikhonov regularization parameter
-        self.plot           = plot                              # Plot the circuit if True
-        self.time           = None                              # Time taken to complete the simulation - set by @hyperparameters decorator
 
         self.backend = Aer.get_backend('statevector_simulator') # Aer statevector simulator
 
@@ -90,7 +80,6 @@ class QRCM:
 
         # Repeat for each qubit
         for i, angle in enumerate(theta):
-
             j = i % n           # j is the qubit index and loops from 0 to n-1
             loop = i // n       # loop is the number of times all qubits have been used
 
@@ -101,114 +90,34 @@ class QRCM:
             if j < n-1: self.qc.cx(j, j+1)
             else:       self.qc.cx(j, j-1)    # As per the note above
 
-
             # Add a barrier if the last qubit has been used (just for visual clarity)
             if j == n-1:  self.qc.barrier()
 
 
-    def open_loop(self, key, save=False):
-        """ Build and run the quantum circuit! Open-loop mode, so no state feedback.
+    def step(self, row):
+        # Reset the previous circuit - ie remove all gates
+        self.qc.data = []
 
-        Saves:
-            self.qc (QuantumCircuit): Quantum circuit object
-        """
+        # Loading the reservoir state parameters
+        P = self.P
+        X = self.X  = row
+        b = self.beta
 
-        # Add a status bar to the termainal - tqdm is a progress bar library
-        with tqdm(total=self.solver.U[key].shape[0], desc=key) as pbar:
-            for i, row in enumerate(self.solver.U[key]):
-                pbar.update(1)
+        # Add the unitary transformations to the circuit separated by barriers
+        # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
+        self.add_U(4 * pi * P)
+        self.qc.barrier()
+        self.add_U(4 * pi * X)
+        self.qc.barrier()
+        self.add_U(b)
 
-                # Reset the previous circuit - ie remove all gates
-                self.qc.data = []
+        # Plot the circuit using the built-in plot function
+        if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
 
-                # Loading the reservoir state parameters
-                P = self.P
-                X = self.X  = row
-                b = self.beta
+        # Run the circuit - find state probability vector using statevector_simulator
+        psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
+        P_tilde = self.P_tilde  = np.abs(psi)**2
 
-                # Add the unitary transformations to the circuit separated by barriers
-                # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-                self.add_U(4 * pi * P)
-                self.qc.barrier()
-                self.add_U(4 * pi * X)
-                self.qc.barrier()
-                self.add_U(b)
-
-                # Plot the circuit using the built-in plot function
-                if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
-
-                # Run the circuit - save probability vector using statevector_simulator
-                psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
-                P_tilde = self.P_tilde  = np.abs(psi)**2
-
-                # Solve for the final probability vector P^(t+1)
-                P = self.eps * P_tilde + (1-self.eps) * P
-                assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
-
-                # Appending state to the reservoir state matrix during training
-                if save:    self.R[:,i] = psi
-
-
-    @hyperparameters
-    def train(self, override=False):
-        """ Train the QRCM
-
-        Saves:
-            self.W_out (np.ndarray): Output weight matrix (optimized via ridge regression)
-        """
-
-        # Generate the training data
-        self.solver.generate(override)
-
-        # Load data
-        U_washout = self.solver.U["Washout"]
-        U_train   = self.solver.U["Train"]
-        Y_train   = self.solver.Y["Train"]
-        U_test    = self.solver.U["Test"]
-        Y_test    = self.solver.Y["Test"]
-
-        # Cheeky way to test if Wout optimization works
-        # U_test = U_train
-        # Y_test = Y_train
-
-        # Washout the reservoir
-        self.open_loop("Washout")
-
-        # Plot the latest circuit
-        # self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
-
-        # Target output matrix
-        self.U_tg = Y_train.T                           # Dimensions [N_in x N_train]
-        self.R = np.zeros((self.N_dof, len(U_train)))   # Dimensions [N_dof x N_train]
-
-        # For each row in U_train, build and run the circuit - save the reservoir state |psi^(t+1)> in R
-        self.open_loop("Train", save=True)
-
-        # Calculate the optimal output weight matrix -> W_out = U_tg * R^T (RR^T + beta*I)^-1. Dimensions [N_in x N_dof]
-        self.W_out = np.dot(self.U_tg, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tikhonov * np.eye(self.N_dof))))
-
-        # Save the output weight matrix to a file - try deserializing it
-        np.save("log/W_out.npy", self.W_out)            # To load to self.W_out, use np.load("W_out.npy") inside the __init__ method
-
-        self.R = np.zeros((self.N_dof, len(U_test)))    # Reset reservoir state matrix
-        self.open_loop("Test", save=True)
-        Y_pred = np.dot(self.W_out, self.R)           # Multiply R^T by W_out to get all the output signals
-
-        # Calculate the absolute error for each timestep - for each N_in on a new line plot
-        self.err_ts = np.abs(Y_test - Y_pred.T)
-
-        # Plot the error time series for all N_in dimensions
-        # plt.figure()
-
-        # for i in range(self.N_in):
-        #     plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
-        # plt.title("Absolute Error Time Series")
-        # plt.legend()
-        # plt.xlabel("Time Step")
-        # plt.ylabel("Absolute Error")
-        # plt.ylim(0, 1.1 * np.max(self.err_ts))        # make sure the data covers 70% of the plot height
-        # plt.show()
-
-        # Find MSE
-        self.MSE = np.mean(self.err_ts**2)
-        self.MSE_full = np.mean(self.err_ts**2, axis=0)
+        # Solve for the final probability vector P^(t+1)
+        P = self.eps * P_tilde + (1-self.eps) * P
+        assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
