@@ -30,7 +30,10 @@ class Solver:
         noisy: whether the data is noisy or not
     """
 
-    def __init__(self, params, dt, N_sets, upsample=1, noisy=False, seed=0):
+    def __init__(self, params, dt, N_sets,
+                 upsample=1, autoencoder=None,
+                 noisy=False, seed=0):
+
         self.params     = params
         self.dt         = dt
         self.N_sets     = N_sets
@@ -50,6 +53,8 @@ class Solver:
 
         self.Y          = {"Train"  : [],
                            "Test"   : []}
+
+        self.ae         = autoencoder
 
 
     def ddt(self):
@@ -115,7 +120,7 @@ class Solver:
         N_sets      = self.N_sets
 
         if not override:
-            N_sets = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
+            N_sets  = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
 
         N_washout, N_train, N_test = N_sets
 
@@ -147,6 +152,13 @@ class Solver:
             for i in range(self.dim):
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
                                 + self.rnd.normal(0, sigma_n*data_std[i], N_train-1)
+
+        if self.ae is not None:    self.autoencode()
+
+
+    def autoencode(self):
+        """ Reduces dimensionality of data to latent space """
+        None
 
 
     def plot(self, N_val=100):

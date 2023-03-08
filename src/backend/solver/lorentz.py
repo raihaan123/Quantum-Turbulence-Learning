@@ -5,9 +5,7 @@ from .ode import Solver
 
 
 class Lorentz(Solver):
-    """ Lorentz system solver class
-
-    """
+    """ Lorentz system solver class """
 
     def __init__(self, params, dt, N_sets, upsample=1, seed=0):
         super().__init__(params, dt, N_sets, upsample, seed)

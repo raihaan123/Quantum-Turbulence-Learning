@@ -35,8 +35,7 @@ class QRCM(RCM):
                         tik=1e-2,
                         seed=0,
                         plot=False):
-        """
-        Initialize the QRCM.
+        """ Initialize the QRCM
 
         Here's a brief overview of the dimensions of the matrices and vectors involved in the QRCM:
         -	Input signal X^t: This is a vector of dimension N_in, representing the input signal to the system at time t
@@ -49,25 +48,27 @@ class QRCM(RCM):
         super().__init__(solver, eps, tik, seed, plot)
 
         ### Defining attributes of the QRCM ###
-        n  = self.N_qubits  = qubits                            # int(np.ceil(np.log2(dim))) for minimum number of qubits required
-        N  = self.N_dof     = 2**n                              # Number of degrees of freedom of quantum reservoir
+        n  = self.N_qubits  = qubits                                # int(np.ceil(np.log2(dim))) for minimum number of qubits required
+        N  = self.N_dof     = 2**n                                  # Number of degrees of freedom of quantum reservoir
 
-        self.qr             = QuantumRegister(n)                # Define the quantum registers in the circuit
-        self.qc             = QuantumCircuit(self.qr)           # Note that the qubits are initialized to |0> by default
+        self.qr             = QuantumRegister(n)                    # Define the quantum registers in the circuit
+        self.qc             = QuantumCircuit(self.qr)               # Note that the qubits are initialized to |0> by default
 
-        self.psi            = np.zeros((N))                     # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
-        self.P              = self.rnd.dirichlet(np.ones(N))    # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
-        self.beta           = self.rnd.uniform(0, 2*pi, n)      # Beta is random rotation vector - this is a real vector of dimension n
+        self.psi            = np.zeros((N))                         # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
+        self.P              = self.rnd.dirichlet(np.ones(N))        # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
+        self.beta           = self.rnd.uniform(0, 2*pi, n)          # Beta is random rotation vector - this is a real vector of dimension n
 
-        self.backend = Aer.get_backend('statevector_simulator') # Aer statevector simulator
+        self.backend = Aer.get_backend('statevector_simulator')     # Aer statevector simulator
 
 
-    def add_U(self, theta):
+    def Unitary(self, theta):
         """ Applies a block U(theta) to the quantum circuit
 
         Note from the paper regarding classical data loading:
-            "The combination of RY and CNOT gates is continued until the last qubit is reached.
-            There, the CNOT is applied to the previous qubit and if not yet finished, the constructor starts at the upper qubit again."
+          "The combination of RY and CNOT gates is continued until
+           the last qubit is reached. There, the CNOT is applied
+           to the previous qubit and if not yet finished, the
+           constructor starts at the upper qubit again."
 
         Args:
             theta (float): Rotation angle vector - size N_qubits (therefore only N_qubits-1 CNOT gates are needed)
@@ -80,8 +81,8 @@ class QRCM(RCM):
 
         # Repeat for each qubit
         for i, angle in enumerate(theta):
-            j = i % n           # j is the qubit index and loops from 0 to n-1
-            loop = i // n       # loop is the number of times all qubits have been used
+            # j is the qubit index and loops from 0 to n-1
+            j = i % n
 
             # Apply the RY gate
             self.qc.ry(angle, j)
@@ -94,22 +95,22 @@ class QRCM(RCM):
             if j == n-1:  self.qc.barrier()
 
 
-    def step(self, row):
+    def step(self):
         # Reset the previous circuit - ie remove all gates
         self.qc.data = []
 
         # Loading the reservoir state parameters
         P = self.P
-        X = self.X  = row
+        X = self.X
         b = self.beta
 
         # Add the unitary transformations to the circuit separated by barriers
         # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.add_U(4 * pi * P)
+        self.Unitary(4 * pi * P)
         self.qc.barrier()
-        self.add_U(4 * pi * X)
+        self.Unitary(4 * pi * X)
         self.qc.barrier()
-        self.add_U(b)
+        self.Unitary(4 * pi * b)
 
         # Plot the circuit using the built-in plot function
         if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
