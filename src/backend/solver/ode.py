@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import odeint
 
 # Local imports
 from tools.decorators import debug
@@ -19,8 +21,10 @@ class Solver:
     Heavily adapted from Alberto Racca's implementation: https://www.sciencedirect.com/science/article/pii/S0893608021001969
 
     Methods:
-        RK4: RK4 time integration
         ddt: time derivative of the ODE system
+        generate: generates data for washout, training and testing
+        plot: plots the data
+
 
     Attributes:
         params: parameters for the ODE system
@@ -61,33 +65,6 @@ class Solver:
         raise NotImplementedError
 
 
-    def RK4(self, N):
-        """ RK4 implementation
-
-        Args:
-            N: number of time steps
-
-        Returns:
-            u: Time series of shape (T.size, u0.size)
-        """
-
-        ddt = self.ddt
-        dt  = self.dt
-
-        T = np.arange(N+1) * dt
-        u = self.u = np.empty((T.size, self.dim))
-
-        u[0] = self.u0
-
-        for i in range(1, T.size):
-            k1 = ddt(u[i-1])
-            k2 = ddt(u[i-1] + k1*dt/2)
-            k3 = ddt(u[i-1] + k2*dt/2)
-            k4 = ddt(u[i-1] + k3*dt)
-
-            u[i] = u[i-1] + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
-
-
     def generate(self, override=False):
         """
             Generates data for training, validation and testing.
@@ -106,11 +83,11 @@ class Solver:
 
         # Number of time steps for transient
         N_transient = int(200/self.dt)
+        T = np.arange(N_transient) * dt
 
-        # Runnning transient solution to reach attractor
+        # Runnning transient period to reach attractor
         self.u0 = self.rnd.random((self.dim))
-        self.RK4(N_transient)
-        self.u0 = self.u[-1]
+        self.u0 = odeint(self.ddt, self.u0, T)[-1]
 
         # Lyapunov time and corresponding time steps
         t_lyap      = 0.906**(-1)     # Lyapunov Time (inverse of largest Lyapunov exponent)
@@ -124,8 +101,10 @@ class Solver:
 
         N_washout, N_train, N_test = N_sets
 
-        # Generate data for training, validation and testing (and washout period)
-        self.RK4(sum(N_sets))
+
+        # Generate data for washout, training and testing using scipy.integrate.odeint
+        T = np.arange(sum(N_sets)) * dt
+        self.u = odeint(self.ddt, self.u0, T)
 
         # Compute normalization factor (range component-wise)
         U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
@@ -155,6 +134,7 @@ class Solver:
 
         if self.ae is not None:    self.autoencode()
 
+        self.plot(sum(N_sets))
 
     def autoencode(self):
         """ Reduces dimensionality of data to latent space """

@@ -77,7 +77,7 @@ class RCM:
 
     @hyperparameters
     def train(self, override=False):
-        """ Train the QRCM
+        """ Train the RCM
 
         Saves:
             self.W_out (np.ndarray): Output weight matrix (optimized via ridge regression)
