@@ -87,6 +87,7 @@ class Solver:
 
         # Runnning transient period to reach attractor
         self.u0 = self.rnd.random((self.dim))
+        # self.u0 = np.zeros((self.dim))
         self.u0 = odeint(self.ddt, self.u0, T)[-1]
 
         # Lyapunov time and corresponding time steps

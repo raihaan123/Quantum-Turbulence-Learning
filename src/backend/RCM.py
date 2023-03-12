@@ -22,7 +22,7 @@ class RCM:
                         eps=1e-2,
                         tik=1e-2,
                         seed=0,
-                        autoencoder=None,       # N_latent <= N_in
+                        autoencoder=None,                   # N_latent <= N_in
                         plot=False):
 
         """ Initialize the RCM """
@@ -40,6 +40,11 @@ class RCM:
         self.tikhonov       = tik                           # Tikhonov regularization parameter
         self.plot           = plot                          # Plot the circuit if True
         self.time           = None                          # Time taken to complete the simulation - set by @hyperparameters decorator
+
+
+    def refresh(self):
+        """ Reset the reservoir state to initial state """
+        self.rnd = np.random.RandomState(self.seed)
 
 
     def step(self):
@@ -69,13 +74,13 @@ class RCM:
             for i in range(ts):
                 pbar.update(1)
                 self.step()
+                self.X = np.dot(self.W_out, self.psi)
 
                 # Calculate the output state
-                self.X = np.dot(self.W_out, self.psi)
                 if save:    self.Y_pred[i,:] = self.X
 
 
-    @hyperparameters
+    # @hyperparameters
     def train(self, override=False):
         """ Train the RCM
 
@@ -93,62 +98,64 @@ class RCM:
         U_test    = self.solver.U["Test"]
         Y_test    = self.solver.Y["Test"]
 
+        self.u_mean = self.solver.u_mean
+        self.norm   = self.solver.norm
+
         # Washout the reservoir
         self.open_loop("Washout")
 
+        # Display the current input row self.X and the current reservoir state self.psi
+        print(f"\nX: {self.X} - supposed to be {U_washout[-1]}")
+        print(f"psi: {self.psi}\n")
+
         # Target output matrix
         self.R = np.zeros((self.N_dof, len(U_train)))       # Dimensions [N_dof x N_train]
+        print(f"\nPreparing to start training - shape of R: {self.R.shape}")
 
         # For each row in U_train, build and run the circuit - save the reservoir state |psi^(t+1)> in R
         self.open_loop("Train", save=True)
 
+        # Display the current input row self.X and the current reservoir state self.psi
+        print(f"\nX: {self.X} - supposed to be {U_train[-1]}")
+        print(f"Shape of R: {self.R.shape}")
+        print(f"R: {self.R}\n")
+
         # Calculate the optimal output weight matrix using Ridge Regression. Dimensions [N_in x N_dof]
         self.W_out = np.dot(Y_train.T, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tikhonov * np.eye(self.N_dof))))
 
-        self.R = np.zeros((self.N_dof, len(U_test)))        # Reset reservoir state matrix
-        self.open_loop("Test", save=True)                   # Run the test data through the reservoir
-        Y_pred = np.dot(self.W_out, self.R).T               # Multiply R by W_out to get all the output states
-
-        self.err_ts = np.abs(Y_test - Y_pred)               # Calculate the absolute error for each timestep
-
-        # Find MSE
-        self.MSE = np.mean(self.err_ts**2)
-        self.MSE_full = np.mean(self.err_ts**2, axis=0)
+        # Print the shape and full matrix W_out
+        print(f"\nShape of W_out: {self.W_out.shape}")
+        print(f"W_out: {self.W_out}")
 
 
     def forward(self):
         # Run washout first in open loop
+        self.refresh()
+        print(f"\nReservoir refreshed")
         self.open_loop("Washout")
 
+        # Display the current input row self.X and the current reservoir state self.psi
+        print(f"psi: {self.psi}\n")
+
         # Run the training data through the reservoir, again in open loop
-        self.open_loop("Train")
+        self.R = np.zeros((self.N_dof, len(self.solver.U["Train"])))       # Dimensions [N_dof x N_train]
+        print(f"\nPreparing to log training run - shape of R: {self.R.shape}")
+        self.open_loop("Train", save=True)
 
-        # Now run the test data through the reservoir, in closed loop
-        self.Y_pred = np.zeros((len(self.solver.U["Test"]), self.N_in))
-        self.closed_loop(len(self.solver.U["Test"]))
+        # Display the current input row self.X and the current reservoir state self.psi
+        print(f"Shape of R: {self.R.shape}")
+        print(f"R: {self.R}\n")
 
-        # Plot the results over the test data
-        plt.figure()
-        for i in range(self.N_in):
-            plt.plot(self.Y_pred[:,i], label=f"Predicted Dimension {i+1}")
-            plt.plot(self.solver.Y["Test"][:,i], label=f"Target Dimension {i+1}")
-        plt.title("Predicted vs Target Time Series")
-        plt.legend()
-        plt.xlabel("Time Step")
-        plt.ylabel("State")
-        plt.show()
+        R1 = self.R.copy()
+        Y_train_pred = np.dot(self.W_out, R1).T
+        print(f"\nY_train_pred: {Y_train_pred}")
 
+        # # Now run the test data through the reservoir, in closed loop
+        # self.Y_pred = np.zeros((len(self.solver.U["Test"]), self.N_in))
+        # self.closed_loop(len(self.solver.U["Test"]))
 
-        # Calculate the absolute error for each timestep
-        # self.err_ts = np.abs(self.solver.Y["Test"] - self.Y_pred)
+        # # Find MSE
+        # self.err_ts = np.abs(self.solver.Y["Test"] - self.Y_pred)/self.solver.Y["Test"] * 100
+        # self.MSE = np.mean(self.err_ts**2)
 
-        # Plot the error time series for all N_in dimensions
-        # plt.figure()
-        # for i in range(self.N_in):
-        #     plt.plot(self.err_ts[:,i], label=f"Dimension {i+1}")
-        # plt.title("Absolute Error Time Series")
-        # plt.legend()
-        # plt.xlabel("Time Step")
-        # plt.ylabel("Absolute Error")
-        # plt.ylim(0, 1.1 * np.max(self.err_ts))        # make sure the data covers 70% of the plot height
-        # plt.show()
+        # print(f"MSE: {self.MSE}")

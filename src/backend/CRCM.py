@@ -183,20 +183,3 @@ class CRCM:
         LHS.ravel()[::LHS.shape[1]+1] += tikh
 
         self.W_out = np.linalg.solve(LHS, RHS)
-
-
-# # Test the ESN with the test data
-
-# xf = crcm.open_loop(U_washout, np.zeros(200))[-1,: 200]
-# Y_pred = crcm.open_loop(U_test, xf)
-
-# # Plot the error time series for each component
-# eror_ts = np.abs(Y_test - Y_pred)
-
-# for i in range(dim):
-#     plt.plot(err_ts[:,i], label=f"Dimension {i+1}")
-# plt.title("Absolute Error Time Series")
-# plt.legend()
-# plt.xlabel("Time Step")
-# plt.ylabel("Absolute Error")
-# plt.show()

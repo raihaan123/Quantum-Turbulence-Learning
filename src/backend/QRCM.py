@@ -61,6 +61,13 @@ class QRCM(RCM):
         self.backend = Aer.get_backend('statevector_simulator')     # Aer statevector simulator
 
 
+    def refresh(self):
+        """ Reset the reservoir state to initial state """
+        super().refresh()
+
+        self.P = self.rnd.dirichlet(np.ones(self.N_dof))
+
+
     def Unitary(self, theta):
         """ Applies a block U(theta) to the quantum circuit
 

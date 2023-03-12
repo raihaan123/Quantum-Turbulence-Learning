@@ -13,13 +13,14 @@ class Lorentz(Solver):
         self.dim = 3
 
 
-    def ddt(self, u, t):
-        """
-        Returns the time derivative of u - specific to the Lorentz system
-        """
+    def ddt(self, u, *args):
+        """ Returns the time derivative of u - specific to the Lorentz system """
+
         beta, rho, sigma    = self.params
         x, y, z             = u
 
         return [sigma*(y-x),
-                        x*(rho-z)-y,
-                        x*y-beta*z]
+                x*(rho-z)-y,
+                x*y-beta*z]
+
+
