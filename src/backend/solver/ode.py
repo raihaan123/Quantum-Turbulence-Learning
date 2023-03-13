@@ -149,6 +149,7 @@ class Solver:
 
     def plot(self, N_val=100):
         """ Plots data """
+        plt.title(f"Training data: {self.__class__.__name__}")
 
         # Plotting part of training data to visualize noise
         plt.plot(self.U["Train"][:N_val,0], c='w', label='Non-noisy')
@@ -157,6 +158,7 @@ class Solver:
         if self.noisy:
             plt.plot(self.U["Train"][:N_val,0], 'r--', label='Noisy')
             plt.plot(self.U["Train"][:N_val], 'r--')
+            plt.legend()
 
-        plt.legend()
+        plt.savefig(f"..\Quantum Turbulence Learning\Diagrams\{self.__class__.__name__}_training_data.png")
         plt.show()

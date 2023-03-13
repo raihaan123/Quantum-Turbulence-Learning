@@ -114,10 +114,6 @@ class RCM:
         # Calculate the optimal output weight matrix using Ridge Regression. Dimensions [N_in x N_dof]
         self.W_out = np.dot(Y_train.T, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tik * np.eye(self.N_dof))))
 
-        # Print the shape and full matrix W_out
-        print(f"\nShape of W_out: {self.W_out.shape}")
-        print(f"W_out: {self.W_out}")
-
 
     def forward(self):
         # Run washout first in open loop
@@ -125,28 +121,35 @@ class RCM:
         print(f"\nReservoir refreshed")
         self.open_loop("Washout")
 
-        # Display the current input row self.X and the current reservoir state self.psi
-        # print(f"psi: {self.psi}\n")
-
         # Run the training data through the reservoir, again in open loop
         self.R = np.zeros((self.N_dof, len(self.solver.U["Train"])))       # Dimensions [N_dof x N_train]
-        # print(f"\nPreparing to log training run - shape of R: {self.R.shape}")
-
 
         self.open_loop("Train", save=True)
         Y_train_pred = np.dot(self.W_out, self.R).T
-        # print(f"\nY_train_pred: {Y_train_pred}")
-
-        # Display the current input row self.X and the current reservoir state self.psi
-        # print(f"Shape of R: {self.R.shape}")
-        # print(f"R: {self.R}\n")
 
         # Now run the test data through the reservoir, in closed loop
         self.Y_pred = np.zeros((len(self.solver.U["Test"]), self.N_in))
         self.closed_loop(len(self.solver.U["Test"]))
 
         # Find MSE
-        self.err_ts = np.abs(self.solver.Y["Test"] - self.Y_pred)/self.solver.Y["Test"] * 100
+        Y_test = self.solver.Y["Test"]
+        self.err_ts = np.abs(Y_test - self.Y_pred)/Y_test * 100
         self.MSE = np.mean(self.err_ts**2)
 
         print(f"MSE: {self.MSE}")
+
+        # Plot the data in Y_train_pred
+        plt.figure()
+        plt.plot(self.Y_pred[:, 0], label="Predicted", color="red")
+        plt.plot(self.Y_pred[:, 1:], color="red")
+
+        # Overlay the expected output
+        plt.plot(Y_test[:, 0], label="Expected", color="blue")
+        plt.plot(Y_test[:, 1:], color="blue")
+
+        plt.title(f"Lorenz system - {self.__class__.__name__}")
+        plt.legend()
+
+        # Save the figure - dpi of 300 is good for printing
+        plt.savefig("..\Quantum Turbulence Learning\Diagrams\CRCM_Lorenz.png", dpi=300)
+        plt.show()

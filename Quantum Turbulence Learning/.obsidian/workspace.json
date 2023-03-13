@@ -190,13 +190,15 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4b4cbd7d68e2603f",
+  "active": "1d67c94c128ce80b",
   "lastOpenFiles": [
-    "Supervisor Meetings/Meeting 6.md",
+    "Diagrams/QRCM Forward Pass.png",
+    "Diagrams/Lorentz_training_data.png",
+    "Diagrams/QRCM_circuit.png",
     "Diagrams/CRCM_Lorenz.png",
+    "Supervisor Meetings/Meeting 6.md",
     "Supervisor Meetings/Meeting 4.md",
     "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
-    "Diagrams/QRCM Forward Pass.png",
     "Diagrams/QRCM Forward Pass.png.crswap",
     "References/QC for NS in ConDi nozzle.pdf",
     "References/QC Literature Review.md",
@@ -210,7 +212,6 @@
     "References/QCFD comparisions.pdf",
     "References/QC with VQAs for Burgers Equation.pdf",
     "References/QC with QFT Poisson Solver.pdf",
-    "Diagrams/QRCM_circuit.png",
     "Supervisor Meetings/Meeting 3.md",
     "Launchpad.md",
     "Theory/Quantum Reservoir Computing Models (QRCMs).md",
