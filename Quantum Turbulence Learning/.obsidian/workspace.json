@@ -11,9 +11,21 @@
             "id": "8c8d6cc8692792e3",
             "type": "leaf",
             "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Supervisor Meetings/Meeting 4.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "1d67c94c128ce80b",
+            "type": "leaf",
+            "state": {
               "type": "image",
               "state": {
-                "file": "Diagrams/QRCM Forward Pass.png"
+                "file": "Diagrams/CRCM_Lorenz.png"
               }
             }
           },
@@ -29,7 +41,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -95,7 +108,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Diagrams/QRCM Forward Pass.png",
+                "file": "Diagrams/CRCM_Lorenz.png",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -112,7 +125,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Diagrams/QRCM Forward Pass.png",
+                "file": "Diagrams/CRCM_Lorenz.png",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -135,7 +148,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Diagrams/QRCM Forward Pass.png"
+                "file": "Diagrams/CRCM_Lorenz.png"
               }
             }
           },
@@ -177,8 +190,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "8c8d6cc8692792e3",
+  "active": "4b4cbd7d68e2603f",
   "lastOpenFiles": [
+    "Supervisor Meetings/Meeting 6.md",
+    "Diagrams/CRCM_Lorenz.png",
+    "Supervisor Meetings/Meeting 4.md",
+    "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+    "Diagrams/QRCM Forward Pass.png",
     "Diagrams/QRCM Forward Pass.png.crswap",
     "References/QC for NS in ConDi nozzle.pdf",
     "References/QC Literature Review.md",
@@ -192,13 +210,9 @@
     "References/QCFD comparisions.pdf",
     "References/QC with VQAs for Burgers Equation.pdf",
     "References/QC with QFT Poisson Solver.pdf",
-    "References/QC prospects for Reactive Turbulence.pdf",
     "Diagrams/QRCM_circuit.png",
-    "Diagrams/QRCM Forward Pass.png",
-    "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
     "Supervisor Meetings/Meeting 3.md",
     "Launchpad.md",
-    "Supervisor Meetings/Meeting 4.md",
     "Theory/Quantum Reservoir Computing Models (QRCMs).md",
     "2023-06-03.md",
     "Theory/Classical Ridge Regression.md",

@@ -111,8 +111,12 @@ class Solver:
         U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
         m           = U_data.min(axis=0)            # axis=0 means along columns
         M           = U_data.max(axis=0)
-        self.norm   = M-m
-        self.u_mean = U_data.mean(axis=0)
+
+        norm        = self.norm   = M-m
+        u_mean      = self.u_mean = U_data.mean(axis=0)
+
+        self.bias_in    = np.array([np.mean(np.abs((U_data-u_mean)/norm))])
+        self.bias_out   = np.array([1.])
 
         # Saving data
         self.U["Washout"] = self.u[:N_washout]
@@ -135,7 +139,8 @@ class Solver:
 
         if self.ae is not None:    self.autoencode()
 
-        self.plot(sum(N_sets))
+        self.plot()
+
 
     def autoencode(self):
         """ Reduces dimensionality of data to latent space """
