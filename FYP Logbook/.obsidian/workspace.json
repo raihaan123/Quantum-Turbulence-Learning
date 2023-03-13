@@ -23,9 +23,11 @@
             "id": "1d67c94c128ce80b",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "Diagrams/CRCM_Lorenz.png"
+                "file": "Supervisor Meetings/Meeting 6.md",
+                "mode": "source",
+                "source": false
               }
             }
           },
@@ -108,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Diagrams/CRCM_Lorenz.png",
+                "file": "Supervisor Meetings/Meeting 6.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -125,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Diagrams/CRCM_Lorenz.png",
+                "file": "Supervisor Meetings/Meeting 6.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -148,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Diagrams/CRCM_Lorenz.png"
+                "file": "Supervisor Meetings/Meeting 6.md"
               }
             }
           },
@@ -181,21 +183,22 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "table-editor-obsidian:Advanced Tables Toolbar": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
-      "command-palette:Open command palette": false
+      "command-palette:Open command palette": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
   "active": "1d67c94c128ce80b",
   "lastOpenFiles": [
-    "Diagrams/QRCM Forward Pass.png",
-    "Diagrams/Lorentz_training_data.png",
-    "Diagrams/QRCM_circuit.png",
     "Diagrams/CRCM_Lorenz.png",
+    "Diagrams/Lorentz_training_data.png",
+    "Diagrams/QRCM Forward Pass.png",
+    "Launchpad.md",
+    "Diagrams/QRCM_circuit.png",
     "Supervisor Meetings/Meeting 6.md",
     "Supervisor Meetings/Meeting 4.md",
     "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
@@ -213,7 +216,6 @@
     "References/QC with VQAs for Burgers Equation.pdf",
     "References/QC with QFT Poisson Solver.pdf",
     "Supervisor Meetings/Meeting 3.md",
-    "Launchpad.md",
     "Theory/Quantum Reservoir Computing Models (QRCMs).md",
     "2023-06-03.md",
     "Theory/Classical Ridge Regression.md",

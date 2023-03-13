@@ -151,5 +151,5 @@ class RCM:
         plt.legend()
 
         # Save the figure - dpi of 300 is good for printing
-        plt.savefig("..\Quantum Turbulence Learning\Diagrams\CRCM_Lorenz.png", dpi=300)
+        plt.savefig("..\FYP Logbook\Diagrams\CRCM_Lorenz.png", dpi=300)
         plt.show()

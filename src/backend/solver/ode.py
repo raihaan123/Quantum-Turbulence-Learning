@@ -147,7 +147,7 @@ class Solver:
         None
 
 
-    def plot(self, N_val=100):
+    def plot(self, N_val=-1):
         """ Plots data """
         plt.title(f"Training data: {self.__class__.__name__}")
 
@@ -160,5 +160,5 @@ class Solver:
             plt.plot(self.U["Train"][:N_val], 'r--')
             plt.legend()
 
-        plt.savefig(f"..\Quantum Turbulence Learning\Diagrams\{self.__class__.__name__}_training_data.png")
+        plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_training_data.png")
         plt.show()

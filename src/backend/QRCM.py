@@ -120,7 +120,7 @@ class QRCM(RCM):
         self.Unitary(4 * pi * b)
 
         # Plot the circuit using the built-in plot function
-        if self.plot:   self.qc.draw(output='mpl', filename='..\Quantum Turbulence Learning\Diagrams\QRCM_circuit.png')
+        if self.plot:   self.qc.draw(output='mpl', filename='..\FYP Logbook\Diagrams\QRCM_circuit.png')
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
