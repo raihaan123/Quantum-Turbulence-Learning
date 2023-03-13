@@ -43,9 +43,7 @@ class Solver:
         self.N_sets     = N_sets
         self.upsample   = upsample
         self.noisy      = noisy
-
         self.seed       = seed
-        self.rnd        = np.random.RandomState(seed)
 
         self.dim        = 0
         self.u          = []
@@ -78,16 +76,16 @@ class Solver:
                 norm: normalisation factor
                 u_mean: mean of training data
         """
-
-        dt          = self.dt
+        # Refresh random generator - in case of calls from multiple RCM instances
+        rnd = self.rnd = np.random.RandomState(self.seed)
+        dt  = self.dt
 
         # Number of time steps for transient
         N_transient = int(200/self.dt)
         T = np.arange(N_transient) * dt
 
         # Runnning transient period to reach attractor
-        self.u0 = self.rnd.random((self.dim))
-        # self.u0 = np.zeros((self.dim))
+        self.u0 = rnd.random((self.dim))
         self.u0 = odeint(self.ddt, self.u0, T)[-1]
 
         # Lyapunov time and corresponding time steps
@@ -135,7 +133,7 @@ class Solver:
             sigma_n = 1e-6     # Controls noise in training inputs (up to 1e-1)
             for i in range(self.dim):
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
-                                + self.rnd.normal(0, sigma_n*data_std[i], N_train-1)
+                                + rnd.normal(0, sigma_n*data_std[i], N_train-1)
 
         if self.ae is not None:    self.autoencode()
 

@@ -36,7 +36,6 @@ class CRCM(RCM):
         step: advances one ESN time step
         open_loop: advances ESN in open-loop
         train: trains the ESN - ie optimizes Wout
-
     """
 
     def __init__(self, solver=None,
@@ -46,10 +45,9 @@ class CRCM(RCM):
                        sigma_in=1,
                        eps=1e-2,
                        tik=1e-6,
-                       seed=0,
-                       plot=False):
+                       seed=0):
 
-        super().__init__(solver, eps, tik, seed, plot)
+        super().__init__(solver, eps, tik, seed)
 
         ### Defining attributes of the CRCM ###
         N = self.N_dof      = N_units                           # Number of reservoir units - ie the degree of freedom of the reservoir
@@ -67,7 +65,6 @@ class CRCM(RCM):
         # Apply a random number in [-1, 1) to a randomn column in each row in Win
         for i in range(N):
             Win[i, self.rnd.randint(0, self.N_in)] = self.rnd.uniform(-1, 1)
-
 
         self.Win = Win.tocsr()              # Convert to CSR format for faster matrix-vector multiplication
 

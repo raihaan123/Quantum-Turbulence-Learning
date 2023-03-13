@@ -45,7 +45,7 @@ class QRCM(RCM):
         -	Final probability vector P^(t+1): This is a vector of dimension N_dof, representing the final probability vector after the linear combination of the evolved probability vector and the previous probability vector has been performed using the leaking rate epsilon
         """
 
-        super().__init__(solver, eps, tik, seed, plot)
+        super().__init__(solver, eps, tik, seed)
 
         ### Defining attributes of the QRCM ###
         n  = self.N_qubits  = qubits                                # int(np.ceil(np.log2(dim))) for minimum number of qubits required
@@ -53,12 +53,13 @@ class QRCM(RCM):
 
         self.qr             = QuantumRegister(n)                    # Define the quantum registers in the circuit
         self.qc             = QuantumCircuit(self.qr)               # Note that the qubits are initialized to |0> by default
+        self.plot           = plot                                  # Plot the Quantum Circuit
 
         self.psi            = np.zeros((N))                         # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
         self.P              = self.rnd.dirichlet(np.ones(N))        # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
         self.beta           = self.rnd.uniform(0, 2*pi, n)          # Beta is random rotation vector - this is a real vector of dimension n
 
-        self.backend = Aer.get_backend('statevector_simulator')     # Aer statevector simulator
+        self.backend = Aer.get_backend('statevector_simulator')     # Aer statevector simulator backend
 
 
     def refresh(self):
@@ -113,14 +114,11 @@ class QRCM(RCM):
 
         # Add the unitary transformations to the circuit separated by barriers
         # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.Unitary(4 * pi * P)
+        self.Unitary(P)
         self.qc.barrier()
-        self.Unitary(4 * pi * X)
+        self.Unitary(X)
         self.qc.barrier()
-        self.Unitary(4 * pi * b)
-
-        # Plot the circuit using the built-in plot function
-        if self.plot:   self.qc.draw(output='mpl', filename='..\FYP Logbook\Diagrams\QRCM_circuit.png')
+        self.Unitary(b)
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
@@ -129,3 +127,9 @@ class QRCM(RCM):
         # Solve for the final probability vector P^(t+1)
         P = self.eps * P_tilde + (1-self.eps) * P
         assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
+
+
+    # Cheeky wrapper of the open_loop method to plot the circuit
+    def open_loop(self, key, save=False):
+        super().open_loop(key, save)
+        if self.plot:   self.qc.draw(output='mpl', filename='..\FYP Logbook\Diagrams\QRCM_circuit.png')

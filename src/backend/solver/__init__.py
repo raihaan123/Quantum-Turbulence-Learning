@@ -1,3 +1,2 @@
-from .vdp import VDP, Slope
-from .lorentz import Lorentz
+from .lorenz import Lorenz
 from .MFE import MFE

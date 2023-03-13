@@ -4,7 +4,7 @@ import numpy as np
 from .ode import Solver
 
 
-class Lorentz(Solver):
+class Lorenz(Solver):
     """ Lorentz system solver class """
 
     def __init__(self, params, dt, N_sets, upsample=1, seed=0):

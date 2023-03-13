@@ -1,7 +1,9 @@
 from qiskit import QuantumCircuit, QuantumRegister, execute, Aer
 import numpy as np
+from numpy import pi, eye
+from numpy.linalg import inv
 import matplotlib.pyplot as plt
-from numpy import pi
+
 from tqdm import tqdm
 
 # Local imports
@@ -21,8 +23,7 @@ class RCM:
     def __init__(self,  solver=None,
                         eps=1e-1,
                         tik=1e-6,
-                        seed=0,
-                        plot=False):
+                        seed=0):
 
         """ Initialize the RCM """
 
@@ -37,7 +38,6 @@ class RCM:
 
         self.eps            = eps                           # Leaking rate epsilon -> P^(t+1) = epsilon*P_tilde^(t+1) + (1-epsilon)*P^(t)
         self.tik            = tik                           # Tikhonov regularization parameter
-        self.plot           = plot                          # Plot the circuit if True
         self.time           = None                          # Time taken to complete the simulation - set by @hyperparameters decorator
 
 
@@ -54,12 +54,13 @@ class RCM:
     def open_loop(self, key, save=False):
         """ Execute the RCM in open-loop mode -i.e no state feedback """
 
-        # Add a status bar to the termainal - tqdm is a progress bar library
-        with tqdm(total=self.solver.U[key].shape[0], desc=key) as pbar:
-            for i, row in enumerate(self.solver.U[key]):
+        u = self.solver.U[key]                              # Selecting the relevant input data
+
+        with tqdm(total=u.shape[0], desc=key) as pbar:      # Add a status bar to the terminal
+            for i, row in enumerate(u):
                 pbar.update(1)
                 self.X = row
-                self.step()
+                self.step()                                 # Propagate the state by one time step
 
                 # Appending state to the reservoir state matrix during training
                 if save:    self.R[:,i] = self.psi
@@ -68,26 +69,23 @@ class RCM:
     def closed_loop(self, ts, save=True):
         """ Execute the RCM in closed-loop mode - i.e with state feedback """
 
-        # Add a status bar to the termainal - tqdm is a progress bar library
-        with tqdm(total=ts, desc="Closed Loop") as pbar:
+        self.Y_pred = np.zeros((ts, self.N_in))             # Reset the prediction register
+
+        with tqdm(total=ts, desc="Closed Loop") as pbar:    # Add a status bar to the terminal
             for i in range(ts):
                 pbar.update(1)
-                self.step()
-                self.X = np.dot(self.W_out, self.psi)
+                self.step()                                 # Propagate the state by one time step
+                self.X = np.dot(self.W_out, self.psi)       # Calculate the output state
 
-                # Calculate the output state
-                if save:    self.Y_pred[i,:] = self.X
+                if save:    self.Y_pred[i,:] = self.X       # Log the output state
 
 
-    def train(self, override=False):
+    def train(self):
         """ Train the RCM
 
         Saves:
             self.W_out (np.ndarray): Output weight matrix (optimized via ridge regression)
         """
-
-        # Generate the training data
-        self.solver.generate(override)
 
         # Load data
         U_washout       = self.solver.U["Washout"]
@@ -102,32 +100,18 @@ class RCM:
         self.bias_in    = self.solver.bias_in
         self.bias_out   = self.solver.bias_out
 
-        # Washout the reservoir
-        self.open_loop("Washout")
+        self.R = np.zeros((self.N_dof, len(U_train)))       # Reservoir state matrix [N_dof x N_train]
 
-        # Target output matrix
-        self.R = np.zeros((self.N_dof, len(U_train)))       # Dimensions [N_dof x N_train]
-
-        # For each row in U_train, build and run the circuit - save the reservoir state |psi^(t+1)> in R
-        self.open_loop("Train", save=True)
+        ### Training pipeline ###
+        self.open_loop("Washout")                           # Washout the reservoir
+        self.open_loop("Train", save=True)                  # Evolve in open-loop mode for the training set with logging
 
         # Calculate the optimal output weight matrix using Ridge Regression. Dimensions [N_in x N_dof]
-        self.W_out = np.dot(Y_train.T, np.dot(self.R.T, np.linalg.inv(np.dot(self.R, self.R.T) + self.tik * np.eye(self.N_dof))))
+        self.W_out = np.dot(Y_train.T, np.dot(self.R.T, inv(np.dot(self.R, self.R.T) + self.tik * eye(self.N_dof))))
 
 
     def forward(self):
-        # Run washout first in open loop
-        self.refresh()
-        print(f"\nReservoir refreshed")
-        self.open_loop("Washout")
-
-        # Run the training data through the reservoir, again in open loop
-        self.R = np.zeros((self.N_dof, len(self.solver.U["Train"])))       # Dimensions [N_dof x N_train]
-
-        self.open_loop("Train", save=True)
-        Y_train_pred = np.dot(self.W_out, self.R).T
-
-        # Now run the test data through the reservoir, in closed loop
+        # Run the test data through the reservoir, in closed loop
         self.Y_pred = np.zeros((len(self.solver.U["Test"]), self.N_in))
         self.closed_loop(len(self.solver.U["Test"]))
 
@@ -147,9 +131,9 @@ class RCM:
         plt.plot(Y_test[:, 0], label="Expected", color="blue")
         plt.plot(Y_test[:, 1:], color="blue")
 
-        plt.title(f"Lorenz system - {self.__class__.__name__}")
+        plt.title(f"{self.solver.__class__.__name__} system - {self.__class__.__name__}")
         plt.legend()
 
-        # Save the figure - dpi of 300 is good for printing
-        plt.savefig("..\FYP Logbook\Diagrams\CRCM_Lorenz.png", dpi=300)
+        # Save the figure
+        plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_{self.solver.__class__.__name__}.png", dpi=500)
         plt.show()
