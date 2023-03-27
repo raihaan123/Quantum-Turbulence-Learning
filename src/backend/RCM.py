@@ -133,8 +133,7 @@ class RCM:
 
         # Save the figure
         plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_{self.solver.__class__.__name__}.png", dpi=500)
-        # plt.show()
-        print(f"psi shape: {self.psi.shape}")
+        plt.show()
 
 
     def plot_results(self, Y_test):

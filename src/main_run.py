@@ -21,7 +21,7 @@ params          = [8/3, 28, 10]         # Parameters for the Lorenz system
 # Define N for washout, training, validation and testing
 N_washout       = 100
 N_train         = 3000
-N_test          = 500
+N_test          = 100
 N_sets          = [N_washout, N_train, N_test]
 
 # Instantiate the solver object
@@ -34,13 +34,13 @@ lor3.generate(override=True)            # Can always be regenerated with an Auto
 # %%
 # Initialise the ESN
 crcm = CRCM(solver=lor3,
-            N_units=1000,
+            N_units=500,
             connectivity=10,
             eps= 5e-2,
-            tik= 1e-4,
+            tik= 1e-6,
             # sigmoid
             # activation=lambda x: 1/(1+np.exp(-x)),
-            
+
             seed=0)
 
 # Train the ESN with the training data

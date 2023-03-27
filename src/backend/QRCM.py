@@ -59,6 +59,7 @@ class QRCM(RCM):
         self.qr             = QuantumRegister(n)                    # Define the quantum registers in the circuit
         self.qc             = QuantumCircuit(self.qr)               # Note that the qubits are initialized to |0> by default
         self.plot           = plot                                  # Plot the Quantum Circuit
+        self.qc.name        = 'Quantum Reservoir Circuit'
 
         self.psi            = np.zeros((N))                         # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
         self.P              = self.rnd.dirichlet(np.ones(N))        # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
@@ -72,8 +73,6 @@ class QRCM(RCM):
         super().refresh()
 
         self.P = self.rnd.dirichlet(np.ones(self.N_dof))
-
-
 
 
     def Unitary(self, theta, name='theta'):
@@ -112,7 +111,8 @@ class QRCM(RCM):
 
     def step(self):
         # Reset the previous circuit - create a new instance of QuantumCircuit
-        self.qc = QuantumCircuit(self.qr)
+        self.qc.data = []
+
 
         # Loading the reservoir state parameters
         P = self.P

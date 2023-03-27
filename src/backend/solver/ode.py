@@ -36,13 +36,13 @@ class Solver:
 
     def __init__(self, params, dt, N_sets,
                  upsample=1, autoencoder=None,
-                 noisy=False, seed=0):
+                 noise=0, seed=0):
 
         self.params     = params
         self.dt         = dt
         self.N_sets     = N_sets
         self.upsample   = upsample
-        self.noisy      = noisy
+        self.noise      = noise         # Controls noise in training inputs (up to 1e-1)
         self.seed       = seed
 
         self.dim        = 0
@@ -128,16 +128,15 @@ class Solver:
         # Adding noise to training set inputs with sigma_n the noise of the data
         # improves performance and regularizes the error as a function of the hyperparameters
 
-        if self.noisy:
+        if self.noise != 0:
             data_std = np.std(self.u, axis=0)
-            sigma_n = 1e-6     # Controls noise in training inputs (up to 1e-1)
             for i in range(self.dim):
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
-                                + rnd.normal(0, sigma_n*data_std[i], N_train-1)
+                                + rnd.normal(0, self.noise*data_std[i], N_train-1)
 
         if self.ae is not None:    self.autoencode()
 
-        # self.plot()
+        self.plot()
 
 
     def autoencode(self):
@@ -152,8 +151,9 @@ class Solver:
         # Plotting part of training data to visualize noise
         plt.plot(self.U["Train"][:N_val,0], c='w', label='Non-noisy')
         plt.plot(self.U["Train"][:N_val], c='w')
-
-        if self.noisy:
+        print(self.noise)
+        if self.noise != 0:
+            print('hai')
             plt.plot(self.U["Train"][:N_val,0], 'r--', label='Noisy')
             plt.plot(self.U["Train"][:N_val], 'r--')
             plt.legend()
