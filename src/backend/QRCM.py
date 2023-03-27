@@ -1,12 +1,17 @@
 from qiskit import QuantumCircuit, QuantumRegister, execute, Aer
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy import pi
+from numpy import pi, tanh
 from tqdm import tqdm
 
 # Local imports
 from tools.decorators import debug, hyperparameters
 from .RCM import RCM
+
+
+class ProbabilityVectorError(Exception):
+    """ Raised when the probability vector is not normalized """
+    pass
 
 
 class QRCM(RCM):
@@ -69,6 +74,8 @@ class QRCM(RCM):
         self.P = self.rnd.dirichlet(np.ones(self.N_dof))
 
 
+
+
     def Unitary(self, theta, name='theta'):
         """ Applies a block U(theta) to the quantum circuit
 
@@ -96,16 +103,16 @@ class QRCM(RCM):
             self.qc.ry(angle, j, label=f'$R_Y$({name})')
 
             # If not on the last qubit, apply the CNOT gate
-            if j < n-1: self.qc.cx(j, j+1)
-            else:       self.qc.cx(j, j-1)    # As per the note above
+            # if j < n-1: self.qc.cx(j, j+1)
+            # else:       self.qc.cx(j, j-1)    # As per the note above
 
             # Add a barrier if the last qubit has been used (just for visual clarity)
             if j == n-1:  self.qc.barrier()
 
 
     def step(self):
-        # Reset the previous circuit - ie remove all gates
-        self.qc.data = []
+        # Reset the previous circuit - create a new instance of QuantumCircuit
+        self.qc = QuantumCircuit(self.qr)
 
         # Loading the reservoir state parameters
         P = self.P
@@ -114,11 +121,11 @@ class QRCM(RCM):
 
         # Add the unitary transformations to the circuit separated by barriers
         # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.Unitary(P, 'P')
+        self.Unitary(10*P, 'P')
         self.qc.barrier()
-        self.Unitary(X, 'X')
-        self.qc.barrier()
-        self.Unitary(b, 'b')
+        self.Unitary(0.01*X, 'X')
+        # self.qc.barrier()
+        # self.Unitary(0.01*b, 'b')
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
@@ -126,7 +133,8 @@ class QRCM(RCM):
 
         # Solve for the final probability vector P^(t+1)
         P = self.eps * P_tilde + (1-self.eps) * P
-        assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
+        if not np.isclose(np.sum(P), 1):
+            raise ProbabilityVectorError("Probability vector is not valid!")
 
 
     # Cheeky wrapper of the open_loop method to plot the circuit at the end

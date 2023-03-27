@@ -22,4 +22,3 @@ class Lorenz(Solver):
         return [sigma*(y-x),
                 x*(rho-z)-y,
                 x*y-beta*z]
-
