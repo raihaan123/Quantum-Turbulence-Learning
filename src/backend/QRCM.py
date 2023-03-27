@@ -69,7 +69,7 @@ class QRCM(RCM):
         self.P = self.rnd.dirichlet(np.ones(self.N_dof))
 
 
-    def Unitary(self, theta):
+    def Unitary(self, theta, name='theta'):
         """ Applies a block U(theta) to the quantum circuit
 
         Note from the paper regarding classical data loading:
@@ -93,7 +93,7 @@ class QRCM(RCM):
             j = i % n
 
             # Apply the RY gate
-            self.qc.ry(angle, j)
+            self.qc.ry(angle, j, label=f'$R_Y$({name})')
 
             # If not on the last qubit, apply the CNOT gate
             if j < n-1: self.qc.cx(j, j+1)
@@ -114,11 +114,11 @@ class QRCM(RCM):
 
         # Add the unitary transformations to the circuit separated by barriers
         # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
-        self.Unitary(P)
+        self.Unitary(P, 'P')
         self.qc.barrier()
-        self.Unitary(X)
-        # self.qc.barrier()
-        # self.Unitary(b)
+        self.Unitary(X, 'X')
+        self.qc.barrier()
+        self.Unitary(b, 'b')
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
