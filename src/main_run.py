@@ -19,9 +19,9 @@ dt              = 0.005 * upsample      # Time step
 params          = [8/3, 28, 10]         # Parameters for the Lorenz system
 
 # Define N for washout, training, validation and testing
-N_washout       = 50
-N_train         = 1000
-N_test          = 100
+N_washout       = 100
+N_train         = 3000
+N_test          = 500
 N_sets          = [N_washout, N_train, N_test]
 
 # Instantiate the solver object
@@ -33,18 +33,19 @@ lor3.generate(override=True)            # Can always be regenerated with an Auto
 
 # %%
 # Initialise the ESN
-# crcm = CRCM(solver=lor3,
-#             N_units=500,
-#             connectivity=10,
-#             eps= 5e-2,
-#             tik= 1e-4,
-#             # sigmoid
-#             activation=lambda x: 1/(1+np.exp(-x)),
-#             seed=0)
+crcm = CRCM(solver=lor3,
+            N_units=1000,
+            connectivity=10,
+            eps= 5e-2,
+            tik= 1e-4,
+            # sigmoid
+            # activation=lambda x: 1/(1+np.exp(-x)),
+            
+            seed=0)
 
-# # Train the ESN with the training data
-# crcm.train()
-# crcm.forward()
+# Train the ESN with the training data
+crcm.train()
+crcm.forward()
 
 # %% [markdown]
 # #### QRCM for Lorenz system
@@ -61,11 +62,4 @@ qrcm = QRCM(solver  = lor3,
 qrcm.train()
 qrcm.forward()
 
-# %%
-# plot the first and second dimension of R vs time
-plt.plot(qrcm.R[3,:])
-print(qrcm.R.shape)
-
-
-
-# %%
+# %% [markdown]

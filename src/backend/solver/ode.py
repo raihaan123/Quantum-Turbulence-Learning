@@ -137,7 +137,7 @@ class Solver:
 
         if self.ae is not None:    self.autoencode()
 
-        self.plot()
+        # self.plot()
 
 
     def autoencode(self):

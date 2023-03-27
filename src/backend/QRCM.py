@@ -103,8 +103,8 @@ class QRCM(RCM):
             self.qc.ry(angle, j, label=f'$R_Y$({name})')
 
             # If not on the last qubit, apply the CNOT gate
-            # if j < n-1: self.qc.cx(j, j+1)
-            # else:       self.qc.cx(j, j-1)    # As per the note above
+            if j < n-1: self.qc.cx(j, j+1)
+            else:       self.qc.cx(j, j-1)    # As per the note above
 
             # Add a barrier if the last qubit has been used (just for visual clarity)
             if j == n-1:  self.qc.barrier()
@@ -124,8 +124,8 @@ class QRCM(RCM):
         self.Unitary(10*P, 'P')
         self.qc.barrier()
         self.Unitary(0.01*X, 'X')
-        # self.qc.barrier()
-        # self.Unitary(0.01*b, 'b')
+        self.qc.barrier()
+        self.Unitary(0.01*b, 'b')
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
