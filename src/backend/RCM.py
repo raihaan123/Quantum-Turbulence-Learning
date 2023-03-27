@@ -25,6 +25,12 @@ class RCM:
                         tik=1e-6,
                         seed=0):
 
+        # Checking the class has been initialized correctly - can be loosened later
+        if solver is None:      raise ValueError("A solver object must be provided.")
+        if eps < 0 or eps > 1:  raise ValueError("The leaking rate (eps) must be between 0 and 1.")
+        if tik < 0:             raise ValueError("The Tikhonov regularization parameter (tik) must be non-negative.")
+
+
         """ Initialize the RCM """
 
         self.solver         = solver                        # Solver object - contains the dynamical system and the input data
@@ -122,18 +128,22 @@ class RCM:
 
         print(f"MSE: {self.MSE}")
 
-        # Plot the data in Y_train_pred
+        # Plot the results
+        self.plot_results(Y_test)
+
+        # Save the figure
+        plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_{self.solver.__class__.__name__}.png", dpi=500)
+        plt.show()
+
+
+    def plot_results(self, Y_test):
         plt.figure()
         plt.plot(self.Y_pred[:, 0], label="Predicted", color="red")
         plt.plot(self.Y_pred[:, 1:], color="red")
 
-        # Overlay the expected output
         plt.plot(Y_test[:, 0], label="Expected", color="blue")
         plt.plot(Y_test[:, 1:], color="blue")
 
         plt.title(f"{self.solver.__class__.__name__} system - {self.__class__.__name__}")
         plt.legend()
 
-        # Save the figure
-        plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_{self.solver.__class__.__name__}.png", dpi=500)
-        plt.show()

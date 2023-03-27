@@ -23,4 +23,3 @@ class Lorenz(Solver):
                 x*(rho-z)-y,
                 x*y-beta*z]
 
-

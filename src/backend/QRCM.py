@@ -117,8 +117,8 @@ class QRCM(RCM):
         self.Unitary(P)
         self.qc.barrier()
         self.Unitary(X)
-        self.qc.barrier()
-        self.Unitary(b)
+        # self.qc.barrier()
+        # self.Unitary(b)
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
@@ -129,7 +129,7 @@ class QRCM(RCM):
         assert np.isclose(np.sum(P), 1), "Probability vector is not valid!"
 
 
-    # Cheeky wrapper of the open_loop method to plot the circuit
+    # Cheeky wrapper of the open_loop method to plot the circuit at the end
     def open_loop(self, key, save=False):
         super().open_loop(key, save)
         if self.plot:   self.qc.draw(output='mpl', filename='..\FYP Logbook\Diagrams\QRCM_circuit.png')
