@@ -153,7 +153,6 @@ class Solver:
         plt.plot(self.U["Train"][:N_val], c='w')
         print(self.noise)
         if self.noise != 0:
-            print('hai')
             plt.plot(self.U["Train"][:N_val,0], 'r--', label='Noisy')
             plt.plot(self.U["Train"][:N_val], 'r--')
             plt.legend()

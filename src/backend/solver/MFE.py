@@ -20,7 +20,8 @@ class MFE(Solver):
         self.kappa_alpha_beta_gamma = np.sqrt(self.alpha**2 + self.beta**2 + self.gamma**2)
         self.Re = params['Re']
 
-    def ddt(self, a):
+
+    def ddt(self, a, *args):
         """ Returns the time derivative of u - specific to the MFE system """
 
         a1, a2, a3, a4, a5, a6, a7, a8, a9 = a
@@ -75,3 +76,19 @@ class MFE(Solver):
                 - np.sqrt(3/2) * self.beta * self.gamma / self.kappa_alpha_beta_gamma * a6 * a8)
 
         return np.array([da1_dt, da2_dt, da3_dt, da4_dt, da5_dt, da6_dt, da7_dt, da8_dt, da9_dt])
+
+
+    def generate(self):
+        super().generate(override=True)
+
+        # Check for laminarization
+        max_kinetic_energy = 0.5 * np.sum(self.U["Train"] ** 2, axis=1).max()
+        if max_kinetic_energy > 0.48:
+            self.U["Train"] = []
+            self.Y["Train"] = []
+
+        # Downsample data
+        self.U["Train"] = self.U["Train"][::4]
+        self.Y["Train"] = self.Y["Train"][::4]
+        self.U["Test"] = self.U["Test"][::4]
+        self.Y["Test"] = self.Y["Test"][::4]

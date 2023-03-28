@@ -16,7 +16,9 @@ from matplotlib import pyplot as plt
 # Data generation parameters
 upsample        = 1                     # To increase the dt of the ESN wrt the numerical integrator
 dt              = 0.005 * upsample      # Time step
-params          = [8/3, 28, 10]         # Parameters for the Lorenz system
+params          = {'beta': 8/3,         # Parameters for the Lorenz system
+                   'rho': 28,
+                   'sigma': 10}     
 
 # Define N for washout, training, validation and testing
 N_washout       = 100
