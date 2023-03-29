@@ -138,11 +138,11 @@ class RCM:
 
     def plot_results(self, Y_test):
         plt.figure()
-        plt.plot(self.solver.ts_test, self.Y_pred[:, 0], label=f"{self.__class__.__name__}", color="red")
-        plt.plot(self.solver.ts_test, self.Y_pred[:, 1:], color="red")
+        plt.plot(self.solver.ts_test, self.Y_pred[:, 1], label=f"{self.__class__.__name__}", color="red")
+        # plt.plot(self.solver.ts_test, self.Y_pred[:, 1:], color="red")
 
-        plt.plot(self.solver.ts_test, Y_test[:, 0], label="RK4", color="blue")
-        plt.plot(self.solver.ts_test, Y_test[:, 1:], color="blue")
+        plt.plot(self.solver.ts_test, Y_test[:, 1], label="RK4", color="blue")
+        # plt.plot(self.solver.ts_test, Y_test[:, 1:], color="blue")
 
         plt.title(f"{self.solver.__class__.__name__} system - {self.__class__.__name__}")
         plt.legend()

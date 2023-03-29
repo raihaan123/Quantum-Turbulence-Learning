@@ -89,7 +89,14 @@ class MFE(Solver):
 
 
     def generate(self):
+        self.u0[4] = self.u0[3] + 0.01 * np.random.RandomState(self.seed).rand() # New silly record lol
         super().generate()
+
+        # Finding kinetic energy of the system at each time step
+        k = 0.5 * self.U["Train"][:, 1:4] * self.U["Train"][:, 1:4]
+
+        # Kick out laminarized cases (i.e. maximum kinetic energy > threshold, k_l = 0.48
+
 
 
     def plot(self, N_val=None):
