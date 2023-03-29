@@ -7,8 +7,13 @@ from .ode import Solver
 class Lorenz(Solver):
     """ Lorentz system solver class """
 
-    def __init__(self, params, dt, N_sets, upsample=1, autoencoder=None, noise=0, seed=0):
-        super().__init__(params, dt, N_sets, upsample, autoencoder, noise, seed)
+    def __init__(self, params, dt, N_sets, u0=None,
+                 upsample=1, autoencoder=None,
+                 noise=0, seed=0):
+
+        super().__init__(params, dt, N_sets, u0,
+                         upsample, autoencoder,
+                         noise, seed)
 
         self.dim = 3
 

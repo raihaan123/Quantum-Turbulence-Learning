@@ -113,7 +113,6 @@ class QRCM(RCM):
         # Reset the previous circuit - create a new instance of QuantumCircuit
         self.qc.data = []
 
-
         # Loading the reservoir state parameters
         P = self.P
         X = self.X

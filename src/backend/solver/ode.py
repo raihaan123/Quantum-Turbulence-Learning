@@ -34,13 +34,14 @@ class Solver:
         noisy: whether the data is noisy or not
     """
 
-    def __init__(self, params, dt, N_sets,
-                 upsample=1, autoencoder=None,
-                 noise=0, seed=0):
+    def __init__(self, params, dt, N_sets, u0,
+                 upsample, autoencoder,
+                 noise, seed):
 
         self.params     = params
         self.dt         = dt
         self.N_sets     = N_sets
+        self.u0         = u0
         self.upsample   = upsample
         self.noise      = noise         # Controls noise in training inputs (up to 1e-1)
         self.seed       = seed
@@ -63,7 +64,7 @@ class Solver:
         raise NotImplementedError
 
 
-    def generate(self, override=False):
+    def generate(self):
         """
             Generates data for training, validation and testing.
 
@@ -80,30 +81,37 @@ class Solver:
         rnd = self.rnd = np.random.RandomState(self.seed)
         dt  = self.dt
 
-        # Number of time steps for transient
-        N_transient = int(200/self.dt)
-        T = np.arange(N_transient) * dt
+        # # Number of time steps for transient - set to 200 as standard
+        # N_transient = int(200/self.dt)
+        # T = np.arange(N_transient) * dt
 
-        # Runnning transient period to reach attractor
-        self.u0 = rnd.random((self.dim))
-        self.u0 = odeint(self.ddt, self.u0, T)[-1]
+        # Initial condition
+        if self.u0 is None:
+            self.u0 = rnd.random((self.dim))
 
-        # Lyapunov time and corresponding time steps
-        t_lyap      = 0.906**(-1)     # Lyapunov Time (inverse of largest Lyapunov exponent)
-        N_lyap      = int(t_lyap/dt)
+        # # Runnning transient period to reach attractor
+        # self.u0 = odeint(self.ddt, self.u0, T)[-1]
 
-        # Number of time steps for washout, training, validation and testing
-        N_sets      = self.N_sets
+        # TODO: Implement Lyapunov time function with QR algorithm
+        # # Lyapunov time and corresponding time steps
+        # t_lyap      = 0.906**(-1)     # Lyapunov Time (inverse of largest Lyapunov exponent)
+        # N_lyap      = int(t_lyap/dt)
 
-        if not override:
-            N_sets  = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
+        # # Number of time steps for washout, training, validation and testing
+        # N_sets      = self.N_sets
 
-        N_washout, N_train, N_test = N_sets
+        # if not override:
+        #     N_sets  = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
 
+        N_trans, N_washout, N_train, N_test = self.N_sets
 
         # Generate data for washout, training and testing using scipy.integrate.odeint
-        T = np.arange(sum(N_sets)) * dt
+        T = np.arange(sum(self.N_sets)) * dt
         self.u = odeint(self.ddt, self.u0, T)
+
+        # Time vector for training and testing plots
+        self.ts_train = T[N_trans+N_washout: N_trans+N_washout+N_train] - T[N_trans+N_washout]
+        self.ts_test  = T[N_trans+N_washout+N_train+1: N_trans+N_washout+N_train+N_test] - T[N_trans+N_washout]
 
         # Compute normalization factor (range component-wise)
         U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
@@ -117,13 +125,13 @@ class Solver:
         self.bias_out   = np.array([1.])
 
         # Saving data
-        self.U["Washout"] = self.u[:N_washout]
-        self.U["Train"]   = self.u[N_washout    : N_washout+N_train-1]      # Inputs
-        self.Y["Train"]   = self.u[N_washout+1  : N_washout+N_train  ]      # Data to match at next timestep
+        self.U["Washout"] = self.u[N_trans:N_trans+N_washout]
+        self.U["Train"]   = self.u[N_trans+N_washout    : N_trans+N_washout+N_train]      # Inputs
+        self.Y["Train"]   = self.u[N_trans+N_washout+1  : N_trans+N_washout+N_train+1]      # Data to match at next timestep
 
         # Testing data
-        self.U["Test"] = self.u[N_washout+N_train    : N_washout+N_train+N_test-1]
-        self.Y["Test"] = self.u[N_washout+N_train+1  : N_washout+N_train+N_test  ]
+        self.U["Test"] = self.u[N_trans+N_washout+N_train    : N_trans+N_washout+N_train+N_test-1]
+        self.Y["Test"] = self.u[N_trans+N_washout+N_train+1  : N_trans+N_washout+N_train+N_test  ]
 
         # Adding noise to training set inputs with sigma_n the noise of the data
         # improves performance and regularizes the error as a function of the hyperparameters
@@ -132,7 +140,7 @@ class Solver:
             data_std = np.std(self.u, axis=0)
             for i in range(self.dim):
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
-                                + rnd.normal(0, self.noise*data_std[i], N_train-1)
+                                + rnd.normal(0, self.noise*data_std[i], N_train)
 
         if self.ae is not None:    self.autoencode()
 
@@ -144,17 +152,17 @@ class Solver:
         None
 
 
-    def plot(self, N_val=-1):
+    def plot(self, N_val=None):
         """ Plots data """
         plt.title(f"Training data: {self.__class__.__name__}")
 
         # Plotting part of training data to visualize noise
-        plt.plot(self.U["Train"][:N_val,0], c='w', label='Non-noisy')
-        plt.plot(self.U["Train"][:N_val], c='w')
-        print(self.noise)
+        plt.plot(self.ts_train, self.U["Train"][:N_val,0], c='w', label='Non-noisy')
+        plt.plot(self.ts_train, self.U["Train"][:N_val], c='w')
+
         if self.noise != 0:
-            plt.plot(self.U["Train"][:N_val,0], 'r--', label='Noisy')
-            plt.plot(self.U["Train"][:N_val], 'r--')
+            plt.plot(self.ts_train, self.U["Train"][:N_val,0], 'r--', label='Noisy')
+            plt.plot(self.ts_train, self.U["Train"][:N_val], 'r--')
             plt.legend()
 
         plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_training_data.png")
