@@ -89,34 +89,28 @@ class Solver:
         if self.u0 is None:
             self.u0 = rnd.random((self.dim))
 
-        # # Runnning transient period to reach attractor
-        # self.u0 = odeint(self.ddt, self.u0, T)[-1]
-
         # TODO: Implement Lyapunov time function with QR algorithm
         # # Lyapunov time and corresponding time steps
         # t_lyap      = 0.906**(-1)     # Lyapunov Time (inverse of largest Lyapunov exponent)
         # N_lyap      = int(t_lyap/dt)
-
-        # # Number of time steps for washout, training, validation and testing
-        # N_sets      = self.N_sets
 
         # if not override:
         #     N_sets  = np.hstack((np.array([N_sets[0]]), np.array([N_sets[1], N_sets[2]]) * N_lyap))
 
         N_trans, N_washout, N_train, N_test = self.N_sets
 
-        # Generate data for washout, training and testing using scipy.integrate.odeint
-        T = np.arange(sum(self.N_sets)) * dt
-        self.u = odeint(self.ddt, self.u0, T)
-
         # Time vector for training and testing plots
+        T = np.arange(sum(self.N_sets)) * dt
         self.ts_train = T[N_trans+N_washout: N_trans+N_washout+N_train] - T[N_trans+N_washout]
         self.ts_test  = T[N_trans+N_washout+N_train+1: N_trans+N_washout+N_train+N_test] - T[N_trans+N_washout]
 
+        # Generate data for washout, training and testing using scipy.integrate.odeint
+        self.u = odeint(self.ddt, self.u0, T)
+
         # Compute normalization factor (range component-wise)
         U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
-        m           = U_data.min(axis=0)            # axis=0 means along columns
-        M           = U_data.max(axis=0)
+        # m           = U_data.min(axis=0)            # axis=0 means along columns
+        # M           = U_data.max(axis=0)
 
         norm        = self.norm   = M-m
         u_mean      = self.u_mean = U_data.mean(axis=0)
@@ -142,9 +136,14 @@ class Solver:
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
                                 + rnd.normal(0, self.noise*data_std[i], N_train)
 
-        if self.ae is not None:    self.autoencode()
+        # if self.normalize:
+        self.U["Train"] = (self.U["Train"] - u_mean) / norm
+        self.Y["Train"] = (self.Y["Train"] - u_mean) / norm
 
-        self.plot()
+        self.U["Test"] = (self.U["Test"] - u_mean) / norm
+        self.Y["Test"] = (self.Y["Test"] - u_mean) / norm
+
+        if self.ae is not None:    self.autoencode()
 
 
     def autoencode(self):
