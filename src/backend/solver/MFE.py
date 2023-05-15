@@ -8,9 +8,8 @@ from .ode import Solver
 class MFE(Solver):
     """ MFE system solver class """
 
-    def __init__(self, params, dt, N_sets, u0=None,
-                 upsample=1, autoencoder=None,
-                 noise=0, seed=0):
+    def __init__(self, params, dt, N_sets, u0=None, upsample=1, autoencoder=None,
+                 noise=0, seed=0, domain=[[0,10],[0,10],[0,10]], n_points=200):
 
         super().__init__(params, dt, N_sets, u0,
                          upsample, autoencoder,
@@ -29,6 +28,9 @@ class MFE(Solver):
         self.Re = params['Re']
         self.k_l = params['k_l']
         self.k_e = params['k_e']
+
+        # Generate the eigenmodes
+        # self.generate_eigenmodes(domain, n_points)
 
 
     def ddt(self, a, *args):
@@ -98,13 +100,66 @@ class MFE(Solver):
         # Kick out laminarized cases (i.e. maximum kinetic energy > threshold, k_l = 0.48
 
 
-
     def plot(self, N_val=None):
         """ Plots data """
         plt.title(f"Training data: {self.__class__.__name__}")
 
         # Plotting part of training data to visualize noise
-        plt.plot(self.ts_train, self.U["Train"][:N_val, 0], c='w', label='Non-noisy')
+        plt.plot(self.ts_train, self.U["Train"][:N_val, :], c='w', label='Non-noisy')
 
         plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_training_data.png")
         plt.show()
+
+
+    def generate_eigenmodes(self, domain, n_points):
+        """ Generates the eigenmodes of the MFE system
+
+        Parameters:
+                domain = [[xi xf], ...] - the domain of each dimension
+                n_points - number of points in each dimension
+        """
+
+        # Data is the magnitudes of each eigenmode - N in total, with T timesteps - so data is [T x N]
+        # We use the eigenmodes to reconstruct the data in the original space - equations as follows:
+
+        # Create the grid
+        x = np.linspace(domain[0][0], domain[0][1], n_points)
+        y = np.linspace(domain[1][0], domain[1][1], n_points)
+        z = np.linspace(domain[2][0], domain[2][1], n_points)
+        X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+
+        alpha = self.alpha
+        gamma = self.gamma
+
+        # Calculate the velocity profiles for each mode
+        V1 = np.array([np.sqrt(2) * np.sin(np.pi * Y / 2), np.zeros_like(Y), np.zeros_like(Y)])
+        V2 = np.array([4/np.sqrt(3) * np.cos(np.pi * Y / 2)**2 * np.cos(gamma * Z), np.zeros_like(Y), np.zeros_like(Y)])
+        V3 = np.array([np.zeros_like(Y), 2 * gamma * np.cos(np.pi * Y / 2) * np.cos(gamma * Z), np.pi * np.sin(np.pi * Y / 2) * np.sin(gamma * Z)]) * (2 / np.sqrt(4 * gamma**2 + np.pi**2))
+        V4 = np.array([np.zeros_like(Y), np.zeros_like(Y), 4/np.sqrt(3) * np.cos(alpha * X) * np.cos(np.pi * Y / 2)**2])
+        V5 = np.array([np.zeros_like(Y), np.zeros_like(Y), 2 * np.sin(alpha * X) * np.sin(np.pi * Y / 2)])
+        V6 = np.array([-gamma * np.cos(alpha * X) * np.cos(np.pi * Y / 2)**2 * np.sin(gamma * Z), np.zeros_like(Y), alpha * np.sin(alpha * X) * np.cos(np.pi * Y / 2)**2 * np.cos(gamma * Z)]) * (4 * np.sqrt(2) / np.sqrt(3 * (alpha**2 + gamma**2)))
+        V7 = np.array([gamma * np.sin(alpha * X) * np.sin(np.pi * Y / 2) * np.sin(gamma * Z), np.zeros_like(Y), alpha * np.cos(alpha * X) * np.sin(np.pi * Y / 2) * np.cos(gamma * Z)]) * (2 * np.sqrt(2) / np.sqrt(alpha**2 + gamma**2))
+        N_8 = 2 * np.sqrt(2) / np.sqrt((alpha**2 + gamma**2) * (4 * alpha**2 + 4 * gamma**2 + np.pi**2))
+        V8 = np.array([np.pi * alpha * np.sin(alpha * X) * np.sin(np.pi * Y / 2) * np.sin(gamma * Z), 2 * (alpha**2 + gamma**2) * np.cos(alpha * X) * np.cos(np.pi * Y / 2) * np.sin(gamma * Z), -np.pi * gamma * np.cos(alpha * X) * np.sin(np.pi * Y / 2) * np.cos(gamma * Z)]) * N_8
+        V9 = np.array([np.sqrt(2) * np.sin(3 * np.pi * Y / 2), np.zeros_like(Y), np.zeros_like(Y)])
+
+#         self.plot_heatmap(V7, n_points)
+
+
+#     def plot_heatmap(self, V, n_points, cmap='viridis'):
+#         """ Create a heatmap for the magnitude of the velocity field for a given mode at a specific z slice.
+
+#         Parameters:
+#         - V: the velocity field for the mode (a 4D array)
+#         - z_slice: the index of the z slice to visualize (default is the middle slice)
+#         - cmap: the colormap to use (default is 'viridis')
+#         """
+#         # Calculate the magnitude of the velocity
+#         magnitude = np.sqrt(np.sum(V**2, axis=0))
+#         select=n_points//2
+
+#         # Create the heatmap
+#         plt.figure(figsize=(8, 6))
+#         plt.imshow(magnitude[:, :, select], cmap=cmap, origin='lower')
+#         plt.colorbar(label='Velocity magnitude')
+#         plt.show()

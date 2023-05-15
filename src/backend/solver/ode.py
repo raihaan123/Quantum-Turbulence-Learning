@@ -65,25 +65,20 @@ class Solver:
 
 
     def generate(self):
-        """
-            Generates data for training, validation and testing.
+        """ Generates data for training, validation and testing.
 
-            Returns:
-                U_washout: washout input
-                U_train: training input
-                Y_train: training output to match at next timestep
-                U_test: test input
-                Y_test: test output to match at next timestep
-                norm: normalisation factor
-                u_mean: mean of training data
+        Returns:
+            U_washout: washout input
+            U_train: training input
+            Y_train: training output to match at next timestep
+            U_test: test input
+            Y_test: test output to match at next timestep
+            norm: normalisation factor
+            u_mean: mean of training data
         """
         # Refresh random generator - in case of calls from multiple RCM instances
         rnd = self.rnd = np.random.RandomState(self.seed)
         dt  = self.dt
-
-        # # Number of time steps for transient - set to 200 as standard
-        # N_transient = int(200/self.dt)
-        # T = np.arange(N_transient) * dt
 
         # Initial condition
         if self.u0 is None:
@@ -109,14 +104,11 @@ class Solver:
 
         # Compute normalization factor (range component-wise)
         U_data      = self.u[:N_washout+N_train]    # [:x] means from 0 to x-1 --> ie first x elements
-        # m           = U_data.min(axis=0)            # axis=0 means along columns
-        # M           = U_data.max(axis=0)
+        m           = U_data.min(axis=0)            # axis=0 means along columns
+        M           = U_data.max(axis=0)
 
-        norm        = self.norm   = M-m
+        std         = self.std = U_data.std(axis=0)
         u_mean      = self.u_mean = U_data.mean(axis=0)
-
-        self.bias_in    = np.array([np.mean(np.abs((U_data-u_mean)/norm))])
-        self.bias_out   = np.array([1.])
 
         # Saving data
         self.U["Washout"] = self.u[N_trans:N_trans+N_washout]
@@ -137,18 +129,18 @@ class Solver:
                                 + rnd.normal(0, self.noise*data_std[i], N_train)
 
         # if self.normalize:
-        self.U["Train"] = (self.U["Train"] - u_mean) / norm
-        self.Y["Train"] = (self.Y["Train"] - u_mean) / norm
+        self.U["Train"] = (self.U["Train"] - u_mean) / std
+        self.Y["Train"] = (self.Y["Train"] - u_mean) / std
 
-        self.U["Test"] = (self.U["Test"] - u_mean) / norm
-        self.Y["Test"] = (self.Y["Test"] - u_mean) / norm
+        self.U["Test"] = (self.U["Test"] - u_mean) / std
+        self.Y["Test"] = (self.Y["Test"] - u_mean) / std
 
         if self.ae is not None:    self.autoencode()
 
 
     def autoencode(self):
         """ Reduces dimensionality of data to latent space """
-        None
+        raise NotImplementedError
 
 
     def plot(self, N_val=None):

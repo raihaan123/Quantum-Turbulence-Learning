@@ -101,10 +101,7 @@ class RCM:
         Y_test          = self.solver.Y["Test"]
 
         self.u_mean     = self.solver.u_mean
-        self.norm       = self.solver.norm
-
-        self.bias_in    = self.solver.bias_in
-        self.bias_out   = self.solver.bias_out
+        self.std        = self.solver.std
 
         self.R = np.zeros((self.N_dof, len(U_train)))       # Reservoir state matrix [N_dof x N_train]
 
@@ -138,11 +135,11 @@ class RCM:
 
     def plot_results(self, Y_test):
         plt.figure()
-        plt.plot(self.solver.ts_test, self.Y_pred[:, 1], label=f"{self.__class__.__name__}", color="red")
-        # plt.plot(self.solver.ts_test, self.Y_pred[:, 1:], color="red")
+        plt.plot(self.solver.ts_test, self.Y_pred[:, 0], label=f"{self.__class__.__name__}", color="red")
+        plt.plot(self.solver.ts_test, self.Y_pred[:, 1:], color="red")
 
-        plt.plot(self.solver.ts_test, Y_test[:, 1], label="RK4", color="blue")
-        # plt.plot(self.solver.ts_test, Y_test[:, 1:], color="blue")
+        plt.plot(self.solver.ts_test, Y_test[:, 0], label="RK4", color="blue")
+        plt.plot(self.solver.ts_test, Y_test[:, 1:], color="blue")
 
         plt.title(f"{self.solver.__class__.__name__} system - {self.__class__.__name__}")
         plt.legend()
