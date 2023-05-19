@@ -125,10 +125,13 @@ class RCM:
 
         print(f"MSE: {self.MSE}")
 
-        # Plot the results
+
+        # For WandB
+
+        # # Plot the results
         self.plot_results(Y_test)
 
-        # Save the figure
+        # # Save the figure
         plt.savefig(f"..\FYP Logbook\Diagrams\{self.__class__.__name__}_{self.solver.__class__.__name__}.png", dpi=500)
         plt.show()
 

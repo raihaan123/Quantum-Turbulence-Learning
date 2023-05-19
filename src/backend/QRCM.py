@@ -39,6 +39,9 @@ class QRCM(RCM):
                         eps=1e-2,
                         tik=1e-2,
                         seed=0,
+                        x0=5e-1,
+                        x1=1e-2,
+                        x2=1e-2,
                         plot=False):
         """ Initialize the QRCM
 
@@ -51,6 +54,7 @@ class QRCM(RCM):
         """
 
         super().__init__(solver, eps, tik, seed)
+        print(f'x0: {x0}, x1: {x1}, x2: {x2}')
 
         ### Defining attributes of the QRCM ###
         n  = self.N_qubits  = qubits                                # int(np.ceil(np.log2(dim))) for minimum number of qubits required
@@ -63,7 +67,10 @@ class QRCM(RCM):
 
         self.psi            = np.zeros((N))                         # |psi^t> is the quantum state - this is a complex vector of dimension 2^n
         self.P              = self.rnd.dirichlet(np.ones(N))        # P^t is the probability amplitude vector - this is a real vector of dimension N_dof
-        self.beta           = self.rnd.uniform(0, 2*pi, n)          # Beta is random rotation vector - this is a real vector of dimension n
+        self.beta           = self.rnd.uniform(-x2, x2, n)          # Beta is random rotation vector - this is a real vector of dimension n
+
+        self.x0             = x0                                    # Hyperparameter for scaling the probability vector
+        self.x1             = x1                                    # Hyperparameter for scaling the input vector
 
         self.backend = Aer.get_backend('statevector_simulator')     # Aer statevector simulator backend
 
@@ -118,13 +125,32 @@ class QRCM(RCM):
         X = self.X
         b = self.beta
 
+        # print(f'P range: {np.min(P)} - {np.max(P)}, shape: {P.shape}, sum: {np.sum(P)}')
+        # print(f'X range: {np.min(X)} - {np.max(X)}, shape: {X.shape}, sum: {np.sum(X)}')
+        # print(f'b range: {np.min(b)} - {np.max(b)}, shape: {b.shape}, sum: {np.sum(b)}')
+
         # Add the unitary transformations to the circuit separated by barriers
         # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
         self.Unitary(10*P, 'P')
         self.qc.barrier()
-        self.Unitary(0.01*X, 'X')
+        self.Unitary(0.01*X, 'X')    # 0.01 before for Lorenz?
         self.qc.barrier()
         self.Unitary(0.01*b, 'b')
+
+        # P_aug = (P - np.min(P))/np.ptp(P) * self.x0
+        # X_aug = (X - np.min(X))/np.ptp(X) * 2*self.x1 - self.x1
+
+        # # print(f'P_aug range: {np.min(P_aug)} - {np.max(P_aug)}, shape: {P_aug.shape}, sum: {np.sum(P_aug)}')
+        # # print(f'X_aug range: {np.min(X_aug)} - {np.max(X_aug)}, shape: {X_aug.shape}, sum: {np.sum(X_aug)}')
+        # # print(f'b range: {np.min(b)} - {np.max(b)}, shape: {b.shape}, sum: {np.sum(b)}')
+
+        # # Add the unitary transformations to the circuit separated by barriers
+        # # The first unitary is U(4pi*P^t) followed by U(4pi*X^t) and finally U(beta)
+        # self.Unitary(P_aug, 'P')
+        # self.qc.barrier()
+        # self.Unitary(X_aug, 'X')
+        # self.qc.barrier()
+        # self.Unitary(b, 'b')
 
         # Run the circuit - find state probability vector using statevector_simulator
         psi     = self.psi      = np.abs(execute(self.qc, self.backend).result().get_statevector())
