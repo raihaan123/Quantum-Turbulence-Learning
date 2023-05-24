@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Supervisor Meetings/Meeting 7.md",
+                "file": "Supervisor Meetings/Meeting 8.md",
                 "mode": "source",
                 "source": false
               }
@@ -101,6 +101,14 @@
               "type": "starred",
               "state": {}
             }
+          },
+          {
+            "id": "15f90a613a66b2b4",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
           }
         ]
       }
@@ -122,7 +130,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Supervisor Meetings/Meeting 7.md",
+                "file": "Supervisor Meetings/Meeting 8.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -139,7 +147,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Supervisor Meetings/Meeting 7.md",
+                "file": "Supervisor Meetings/Meeting 8.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -162,7 +170,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Supervisor Meetings/Meeting 7.md"
+                "file": "Supervisor Meetings/Meeting 8.md"
               }
             }
           },
@@ -172,7 +180,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Launchpad.md",
+                "file": "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
                 "mode": "preview",
                 "source": false
               }
@@ -206,32 +214,49 @@
   },
   "active": "211c28d64090d66c",
   "lastOpenFiles": [
-    "Supervisor Meetings/Meeting 6.md",
-    "Supervisor Meetings/Meeting 7.md",
+    "Dissertation Figures/bloch.jpg",
+    "Dissertation Figures/bloch.jpg.crdownload",
+    "Dissertation Figures",
+    "New folder",
+    "Diagrams/CRCM_MFE.png",
+    "Diagrams/QRCM_Lorenz.png",
+    "Diagrams/QRCM_MFE.png",
+    "Diagrams/QRCM_circuit.png",
+    "Diagrams/MFE_training_data.png",
+    "Diagrams/Lorenz_training_data.png",
     "Diagrams/CRCM_Lorenz.png",
+    "Supervisor Meetings/Meeting 8.md",
+    "Supervisor Meetings/Meeting 4.md",
+    "Supervisor Meetings/Meeting 6.md",
+    "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
+    "Supervisor Meetings/Meeting 7.md",
+    "Theory/Unitary Transformation.md",
+    "Theory/Thermal Convection Flow.md",
+    "Theory/Reservoir Computing Models (RCMs).md",
+    "Theory/Recurrent Neural Networks (RNNs).md",
+    "Theory/Qubits.md",
+    "Theory/Quantum Reservoir Computing Models (QRCMs).md",
+    "Theory/Quantum Gates.md",
+    "Theory/Quantum Computing.md",
+    "Theory/Entanglement.md",
+    "Theory/Coherence.md",
+    "Theory/Classical Ridge Regression.md",
+    "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
+    "Supervisor Meetings/Meeting 3.md",
+    "Supervisor Meetings/Meeting 2.md",
+    "Supervisor Meetings/Meeting 1.md",
     "Diagrams/Lorentz_training_data.png",
     "Diagrams/QRCM Forward Pass.png",
     "Launchpad.md",
-    "Diagrams/QRCM_circuit.png",
-    "Supervisor Meetings/Meeting 4.md",
-    "Supervisor Meetings/Meeting 5 - Deliverables for Interim.md",
     "Diagrams/QRCM Forward Pass.png.crswap",
     "References/QC for NS in ConDi nozzle.pdf",
     "References/QC Literature Review.md",
     "References/QC Ideas.pdf",
     "References/Data-centric Heuristics.pdf",
     "References/Algorithm for NS with SF-w formulation and LBM.pdf",
-    "Paper Decompositions/Hybrid Quantum-Classical Reservoir Computing of Thermal Convection Flow.md",
     "References/QTML Abstracts.pdf",
     "References/QML with PINNs on 1D Poisson.pdf",
     "References/QML Literature Review.md",
-    "References/QCFD comparisions.pdf",
-    "References/QC with VQAs for Burgers Equation.pdf",
-    "References/QC with QFT Poisson Solver.pdf",
-    "Supervisor Meetings/Meeting 3.md",
-    "Theory/Quantum Reservoir Computing Models (QRCMs).md",
-    "2023-06-03.md",
-    "Theory/Classical Ridge Regression.md",
-    "Supervisor Meetings/Meeting 1.md"
+    "2023-06-03.md"
   ]
 }

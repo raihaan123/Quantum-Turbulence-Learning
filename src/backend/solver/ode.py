@@ -128,7 +128,7 @@ class Solver:
                 self.U["Train"][:,i] = self.U["Train"][:,i] \
                                 + rnd.normal(0, self.noise*data_std[i], N_train)
 
-        # if self.normalize:
+        # # if self.normalize:
         self.U["Train"] = (self.U["Train"] - u_mean) / std
         self.Y["Train"] = (self.Y["Train"] - u_mean) / std
 
