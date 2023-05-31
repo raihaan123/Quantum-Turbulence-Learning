@@ -5,7 +5,7 @@ from .ode import Solver
 
 
 class Lorenz(Solver):
-    """ Lorentz system solver class """
+    """ Lorenz system solver class """
 
     def __init__(self, params, dt, N_sets, u0=None,
                  upsample=1, autoencoder=None,
@@ -24,7 +24,7 @@ class Lorenz(Solver):
 
 
     def ddt(self, u, *args):
-        """ Returns the time derivative of u - specific to the Lorentz system """
+        """ Returns the time derivative of u - specific to the Lorenz system """
 
         x, y, z             = u
 
